@@ -18,7 +18,7 @@ Game đua ngựa vui nhộn chạy trên trình duyệt điện thoại. Nhập 
 - Ngựa chạy sát nhau có thể lấn làn húc nhau: cả hai cùng khựng lại, con bị húc khựng lâu hơn.
 - Ngựa bị bỏ xa được tăng nhẹ tốc độ nên cuộc đua luôn sát nút tới cuối.
 - Bình luận viên hài hước bằng tiếng Việt, quay chậm khi hai con ngựa kề vai nhau gần đích.
-- Nhạc nền điệu galop tự sáng tác, nhanh dần khi vào nước rút và nghe nghẹt lại khi quay chậm. Kèm hiệu ứng âm thanh và kèn chiến thắng, tất cả tổng hợp bằng Web Audio, có nút tắt.
+- Nhạc nền điệu galop tự sáng tác. Vào 200m cuối thì chuyển sang đoạn nước rút giọng thứ: bass dồn dập, trống cuộn, tông nhạc dâng dần và nhanh dần tới vạch đích. Khi quay chậm chỉ còn tiếng tim đập. Kèm hiệu ứng âm thanh và kèn chiến thắng, tất cả tổng hợp bằng Web Audio, có nút tắt.
 - Bục trao giải, bảng xếp hạng có thời gian và nút sao chép kết quả để gửi vào nhóm chat.
 
 ## Kỹ thuật
