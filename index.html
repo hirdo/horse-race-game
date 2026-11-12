@@ -866,7 +866,7 @@ function crossObstacles(h, px) {
       if (Math.random() < 0.6) Say.push(fill(pick(LINES.jumpOk), h, vars), 1);
     } else {
       o.done = true; o.fade = 1.6; // vật cản còn hiện thêm một lúc để thấy rõ vì sao ngựa té
-      setEv(h, def.hit);
+      setEv(h, def.hit); h.ev.cause = o.kind;
       h.float = { text: { hurdle: 'Vướng hàng rào!', rock: 'Vấp đá!', banana: 'Trượt vỏ chuối!', mud: 'Dính bùn!' }[o.kind], t: 1.4 };
       const key = o.kind === 'mud' ? 'mud' : o.kind === 'banana' ? 'banana' : 'jumpFail';
       Say.push(fill(pick(LINES[key]), h, vars), 2);
@@ -1216,7 +1216,8 @@ function drawHorse(c, x, y, k, h) {
   c.save(); c.translate(x, y);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 0.36 * k, 0.42 * k, 0.06 * k, 0, 0, Math.PI * 2); c.fill();
   if (type === 'backward') c.scale(-1, 1);
-  if (type === 'stumble') { const pr = 1 - h.ev.t / EV.stumble.dur, dip = Math.sin(Math.min(1, pr * 1.6) * Math.PI / 2) * (pr > 0.7 ? (1 - pr) / 0.3 : 1); c.translate(0.1 * k * dip, 0.12 * k * dip); c.rotate(0.75 * dip); }
+  if (type === 'stumble' && h.ev.cause === 'banana') { const pr = 1 - h.ev.t / EV.stumble.dur; c.translate(0, -Math.sin(pr * Math.PI) * 0.3 * k); c.rotate(pr * Math.PI * 2); } // trượt vỏ chuối: lộn vòng trên không
+  else if (type === 'stumble') { const pr = 1 - h.ev.t / EV.stumble.dur, dip = Math.sin(Math.min(1, pr * 1.6) * Math.PI / 2) * (pr > 0.7 ? (1 - pr) / 0.3 : 1); c.translate(0.1 * k * dip, 0.12 * k * dip); c.rotate(0.75 * dip); }
   if (nap) c.translate(0, 0.14 * k);
   if (type === 'bumped') c.rotate(Math.sin(performance.now() / 40) * 0.12);
   if (h.jump) c.rotate(-0.15 * Math.cos(clamp(h.jump.t / h.jump.dur, 0, 1) * Math.PI));
