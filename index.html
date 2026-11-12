@@ -403,75 +403,62 @@ const Sound = (() => {
     77, _, 81, _, 79, _, 83, _,
     84, _, 79, _, 72, _, _, _,
   ];
-  // Đoạn nước rút: giọng thứ, bass móc kép dồn dập, giọng dâng dần lên (đổi tông) khi càng gần đích.
-  const CHF = { Am: { r: 45, n: [57, 60, 64] }, F: { r: 41, n: [57, 60, 65] }, G: { r: 43, n: [55, 59, 62] }, E: { r: 40, n: [56, 59, 64] } };
-  const PROGF = ['Am', 'F', 'G', 'E'];
-  const ARP = [0, 1, 2, 1, 0, 1, 2, 3];   // 3 = nốt gốc lên một quãng tám
-  const music = { playing: false, step: 0, next: 0, timer: 0, level: 0.3, slow: false, section: 'main', prog: 0, fstep: 0 };
+  // Cả trận là MỘT bài: cùng giai điệu, cùng vòng hợp âm. Chặng cuối chỉ chồng thêm lớp
+  // (bass chạy, trống con, giai điệu nhân đôi quãng tám, hợp âm kéo dài), nhanh dần và dâng tông
+  // theo khoảng cách tới đích, nên chuyển đoạn liền mạch chứ không đổi sang bài khác.
+  const music = { playing: false, step: 0, next: 0, timer: 0, level: 0.3, slow: false, section: 'main', prog: 0, fill: 0, sstep: 0 };
 
-  function snare(t, vol, M) { noise(0.09, vol, 'bandpass', 1900, 0, 0, M, t); tone(190, 0.07, 'triangle', vol * 0.5, 0, 0, M, t); }
+  function snare(t, vol, M) { noise(0.08, vol, 'bandpass', 2000, 0, 0, M, t); tone(200, 0.06, 'triangle', vol * 0.5, 0, 0, M, t); }
   function kick(t, vol, M) { tone(150, 0.13, 'sine', vol, 0, 45, M, t); }
 
-  function stepMain(i, t, st, M) {
+  function stepSong(i, t, st, M) {
     const bar = Math.floor(i / 8), s = i % 8;
     const ch = CH[bar === 6 && s >= 4 ? 'G' : PROG[bar]];
-    if (s === 0 || s === 4) { tone(mtof(ch.r + (s === 4 ? 7 : 0)), st * 1.5, 'triangle', 0.2, 0, 0, M, t); kick(t, 0.22, M); }
-    if (s === 2 || s === 6) ch.n.forEach((m) => tone(mtof(m), st * 0.7, 'triangle', 0.035, 0, 0, M, t));
+    const fin = music.section === 'final', p = fin ? music.prog : 0;
+    const up = fin ? (p > 0.66 ? 2 : p > 0.33 ? 1 : 0) : 0;   // dâng tông từng nửa cung
+    const f = (m) => mtof(m + up);
+
+    // Bass: "bùm-chát" như cũ; chặng cuối chuyển thành chạy móc đơn đều, xen quãng tám.
+    if (!fin) { if (s === 0 || s === 4) tone(f(ch.r + (s === 4 ? 7 : 0)), st * 1.5, 'triangle', 0.2, 0, 0, M, t); }
+    else tone(f(ch.r + (s % 2 ? 12 : 0)), st * 0.9, 'triangle', 0.2, 0, 0, M, t);
+
+    // Trống: chân ở phách mạnh; chặng cuối thêm trống con phách 2-4, rồi dày dần.
+    if (s === 0 || s === 4 || (fin && p > 0.5 && (s === 2 || s === 6))) kick(t, 0.22, M);
+    if (fin && (s === 2 || s === 6)) snare(t, 0.09 + p * 0.06, M);
+    if (fin && p > 0.6) snare(t + st / 2, 0.03 + p * 0.05, M);
+    if (music.fill > 0) { snare(t, 0.04 + (8 - music.fill) * 0.014, M); snare(t + st / 2, 0.04 + (8 - music.fill) * 0.014, M); music.fill--; }
+
+    // Hợp âm "chát" ở phách nhẹ; chặng cuối thêm hợp âm kéo dài cả ô nhịp làm nền.
+    if (s === 2 || s === 6) ch.n.forEach((m) => tone(f(m), st * 0.7, 'triangle', 0.035, 0, 0, M, t));
+    if (fin && s === 0) ch.n.forEach((m) => tone(f(m), st * 7.6, 'sawtooth', 0.012 + p * 0.01, 0, 0, M, t));
+
+    // Giai điệu chính; chặng cuối nhân đôi lên quãng tám cho sáng và gắt hơn.
     const m = LEAD[i];
-    if (m) tone(mtof(m), st * 0.85, 'square', 0.03 + music.level * 0.025, 0, 0, M, t);
-    if (music.level >= 0.7 && s % 2 === 1) tone(mtof(ch.n[2] + 12), st * 0.4, 'sine', 0.035, 0, 0, M, t);
-  }
-
-  function stepFinal(i, t, st, M) {
-    const p = music.prog;                       // 0 → 1 khi tiến về đích
-    const bar = Math.floor(i / 8) % 4, s = i % 8;
-    const up = Math.floor(p * 4);               // dâng tông 0 → 3 nửa cung
-    const ch = CHF[PROGF[bar]];
-    const tr = (m) => mtof(m + up);
-    // Bass móc kép (2 nốt mỗi nhịp móc đơn), xen quãng tám
-    tone(tr(ch.r), st * 0.45, 'sawtooth', 0.09, 0, 0, M, t);
-    tone(tr(ch.r + 12), st * 0.45, 'sawtooth', 0.07, 0, 0, M, t + st / 2);
-    // Trống: chân đều mỗi phách, trống con phách 2 và 4, rồi cuộn dần khi gần đích
-    if (s % 2 === 0) kick(t, 0.25, M);
-    if (s === 2 || s === 6) snare(t, 0.12 + p * 0.08, M);
-    if (p > 0.55) { snare(t + st / 2, 0.04 + p * 0.07, M); if (s % 2 === 1) snare(t, 0.05 + p * 0.06, M); }
-    if (p > 0.8) snare(t + st / 4, 0.03 + p * 0.05, M), snare(t + st * 0.75, 0.03 + p * 0.05, M);
-    // Giai điệu rải hợp âm kiểu "đuổi bắt", quãng tám trên khi qua nửa đoạn
-    const n = ARP[s] === 3 ? ch.n[0] + 12 : ch.n[ARP[s]];
-    tone(tr(n + 12 + (p > 0.5 ? 12 : 0)), st * 0.8, 'square', 0.045, 0, 0, M, t);
-    // Hợp âm kéo dài đầu mỗi ô nhịp + tiếng "vút" dâng lên ở nửa sau
-    if (s === 0) {
-      ch.n.forEach((m) => tone(tr(m), st * 7.5, 'sawtooth', 0.022, 0, 0, M, t));
-      if (p > 0.4) tone(tr(ch.r + 24), st * 8, 'sawtooth', 0.02 + p * 0.03, 0, tr(ch.r + 48), M, t);
+    if (m) {
+      tone(f(m), st * 0.85, 'square', 0.03 + music.level * 0.025, 0, 0, M, t);
+      if (fin) tone(f(m + 12), st * 0.7, 'square', 0.012 + p * 0.016, 0, 0, M, t);
     }
+    if (music.level >= 0.7 && s % 2 === 1) tone(f(ch.n[2] + 12), st * 0.4, 'sine', 0.035, 0, 0, M, t);
   }
 
-  // Quay chậm: chỉ còn tiếng tim đập và một hợp âm căng kéo dài.
+  // Quay chậm: vẫn trong tông Đô, giữ hợp âm G7 (chờ được giải quyết về C khi về đích) và tiếng tim đập.
   function stepSlow(i, t, st, M) {
     const s = i % 8;
-    if (s === 0) { kick(t, 0.35, M); CHF.E.n.forEach((m) => tone(mtof(m + 12), st * 7.8, 'triangle', 0.03, 0, 0, M, t)); }
-    if (s === 1) kick(t, 0.2, M);
+    if (s === 0) { kick(t, 0.35, M); [55, 59, 62, 65].forEach((m) => tone(mtof(m + 12), st * 7.8, 'triangle', 0.028, 0, 0, M, t)); }
+    if (s === 1 || s === 5) kick(t, 0.18, M);
     if (s === 4) kick(t, 0.3, M);
-    if (s === 5) kick(t, 0.17, M);
-    if (s % 2 === 0) tone(mtof(88), st * 0.3, 'sine', 0.015, 0, 0, M, t);
   }
 
   function pump() {
     if (!music.playing || !ctx) return;
     const M = musicFilter;
-    let bpm;
-    if (music.slow) bpm = 92;
-    else if (music.section === 'final') bpm = 172 + music.prog * 38;
-    else bpm = 148 + music.level * 22;
+    const bpm = music.slow ? 96 : 150 + (music.section === 'final' ? 12 + music.prog * 36 : 0);
     const st = 60 / bpm / 2;
     if (music.next < now()) music.next = now() + 0.02;
     while (music.next < now() + 0.15) {
-      if (music.slow) stepSlow(music.fstep, music.next, st, M);
-      else if (music.section === 'final') stepFinal(music.fstep, music.next, st, M);
-      else stepMain(music.step, music.next, st, M);
+      if (music.slow) { stepSlow(music.sstep, music.next, st, M); music.sstep = (music.sstep + 1) % 8; }
+      else { stepSong(music.step, music.next, st, M); music.step = (music.step + 1) % LEAD.length; }
       music.next += st;
-      music.step = (music.step + 1) % LEAD.length;
-      music.fstep = (music.fstep + 1) % 32;
     }
   }
 
@@ -480,7 +467,7 @@ const Sound = (() => {
     setOn(v) { on = v; if (master) master.gain.setTargetAtTime(v ? 0.6 : 0, now(), 0.05); },
     startMusic() {
       if (!ctx) return;
-      Object.assign(music, { playing: true, step: 0, fstep: 0, next: now() + 0.05, slow: false, section: 'main', prog: 0 });
+      Object.assign(music, { playing: true, step: 0, sstep: 0, fill: 0, next: now() + 0.05, slow: false, section: 'main', prog: 0 });
       musicFilter.frequency.setTargetAtTime(14000, now(), 0.05);
       musicGain.gain.cancelScheduledValues(now()); musicGain.gain.setTargetAtTime(1, now(), 0.05);
       clearInterval(music.timer); music.timer = setInterval(pump, 25); pump();
@@ -490,13 +477,10 @@ const Sound = (() => {
     // remaining: số mét còn lại tới khoảnh khắc quyết định; dưới 220m thì chuyển sang đoạn nước rút.
     stretch(remaining) {
       if (!music.playing) return;
-      if (music.section !== 'final' && remaining < 220) {
-        music.section = 'final'; music.fstep = 0;
-        if (ctx) { const t = now() + 0.02; kick(t, 0.4, musicFilter); noise(1.1, 0.14, 'highpass', 6000, 0, 0, musicFilter, t); CHF.Am.n.forEach((m) => tone(mtof(m - 12), 0.6, 'sawtooth', 0.05, 0, 0, musicFilter, t)); }
-      }
+      if (music.section !== 'final' && remaining < 220) { music.section = 'final'; music.fill = 8; } // một ô nhịp trống dồn để vào đoạn
       if (music.section === 'final') music.prog = Math.max(music.prog, clamp(1 - remaining / 220, 0, 1));
     },
-    slowmo(v) { if (music.slow === v) return; music.slow = v; music.fstep = 0; if (musicFilter) musicFilter.frequency.setTargetAtTime(v ? 2200 : 14000, now(), 0.1); },
+    slowmo(v) { if (music.slow === v) return; music.slow = v; music.sstep = 0; if (musicFilter) musicFilter.frequency.setTargetAtTime(v ? 2200 : 14000, now(), 0.1); },
     crash() { noise(1.4, 0.2, 'highpass', 5000); tone(55, 0.5, 'sine', 0.35, 0, 30); },
     beep(hi) { tone(hi ? 880 : 440, hi ? 0.5 : 0.16, 'square', 0.13); },
     gun() { noise(0.3, 0.6, 'lowpass', 3000, 150); },
