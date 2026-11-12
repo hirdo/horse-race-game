@@ -52,9 +52,17 @@ h1 span { color: var(--silk); }
 .label { font-weight: 800; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0; }
 .label .opt, .label .num { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--moss); font-variant-numeric: tabular-nums; }
 .add-row { display: flex; gap: 8px; }
-.field { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; border: 2px solid var(--turf-line); background: var(--turf); font-size: 16px; }
+.field { width: 100%; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; border: 2px solid var(--turf-line); background: var(--turf); font-size: 16px; }
 .field::placeholder { color: #6f9580; }
 .field:focus { border-color: var(--silk); outline: none; }
+.add-row .field { flex: 1; width: auto; }
+.task-box { position: relative; }
+.task-box .field { padding-right: 44px; }
+.task-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--moss); font-size: 20px; line-height: 1; }
+.task-clear:hover { background: var(--turf-line); color: var(--chalk); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -2px; }
+.preset { height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--turf-line); background: transparent; color: var(--chalk); font-size: 13px; font-weight: 600; }
+.preset[aria-pressed="true"] { background: var(--chalk); color: var(--turf); border-color: var(--chalk); }
 .btn-add { height: 48px; padding: 0 18px; border-radius: 12px; border: 0; background: var(--chalk); color: var(--turf); font-weight: 800; }
 .hint { margin: -4px 0 0; font-size: 13px; color: var(--moss); }
 .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -97,9 +105,14 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
 .cd { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; font: 400 clamp(64px, 26vw, 140px)/1 var(--font-display); color: var(--silk); text-shadow: 0 6px 0 rgba(0,0,0,.35); }
 .cd.pop { animation: pop .7s ease-out both; }
 @keyframes pop { 0% { transform: scale(.3); opacity: 0 } 30% { transform: scale(1.1); opacity: 1 } 100% { transform: scale(1); opacity: 0 } }
-.banner { position: absolute; left: 50%; top: 6px; transform: translateX(-50%) rotate(-4deg); padding: 6px 16px; border-radius: 10px; background: var(--rose); color: #2b0007; font: 400 clamp(22px, 7vw, 34px)/1.1 var(--font-display); white-space: nowrap; pointer-events: none; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.banner { position: absolute; left: 50%; top: 6px; transform: translateX(-50%) rotate(-4deg); padding: 5px 14px; border-radius: 10px; background: var(--rose); color: #2b0007; font: 400 clamp(18px, 5.5vw, 30px)/1.1 var(--font-display); white-space: nowrap; pointer-events: none; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .banner.go { animation: slam 1.6s ease-out both; }
 @keyframes slam { 0% { transform: translateX(-50%) rotate(-4deg) scale(2.2); opacity: 0 } 15% { transform: translateX(-50%) rotate(-4deg) scale(1); opacity: 1 } 80% { opacity: 1 } 100% { opacity: 0 } }
+.stage-btn { position: absolute; top: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--turf-line); background: rgba(15,47,31,.88); font-weight: 800; font-size: 13px; z-index: 2; }
+.stage-btn[aria-pressed="true"] { background: var(--silk); color: var(--silk-ink); border-color: var(--silk); }
+#viewBtn { right: max(8px, env(safe-area-inset-right, 0px)); }
+#fsBtn { left: max(8px, env(safe-area-inset-left, 0px)); width: 32px; padding: 0; font-size: 16px; }
+.toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 12px; background: rgba(15,20,25,.88); font-size: 13px; font-weight: 600; text-align: center; pointer-events: none; z-index: 2; }
 .caster { padding-block: 10px; display: flex; gap: 10px; align-items: center; background: #0f2f1f; min-height: 68px; }
 .mic { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--silk); color: var(--silk-ink); display: grid; place-items: center; font: 400 13px/1 var(--font-display); }
 .say { margin: 0; font-weight: 600; font-size: 15px; line-height: 1.35; min-width: 0; }
@@ -136,6 +149,16 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
 .actions .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
+/* Điện thoại xoay ngang: gom HUD vào một dòng, thu gọn bình luận để đường đua cao hơn. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud { grid-template-columns: minmax(0, auto) 1fr auto; padding-block: 6px; }
+  .hud-row { max-width: 44vw; }
+  .map { grid-column: auto; order: 1; margin-right: 18px; }
+  .hud-btns { order: 2; }
+  .caster { min-height: 0; padding-block: 6px; }
+  .mic { width: 30px; height: 30px; font-size: 10px; }
+  .say { font-size: 13px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .cd.pop, .banner.go, .say.in { animation-duration: .01s; }
   .cta { transition: none; }
@@ -175,7 +198,11 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
         </fieldset>
 
         <label class="label" for="taskInput">Nhiệm vụ <span class="opt">không bắt buộc</span></label>
-        <input class="field" id="taskInput" type="text" maxlength="60" autocomplete="off" placeholder="vd: bao cả nhóm trà sữa">
+        <div class="task-box">
+          <input class="field" id="taskInput" type="text" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Người được chọn sẽ phải…">
+          <button type="button" class="task-clear" id="taskClear" aria-label="Xoá nhiệm vụ" hidden>×</button>
+        </div>
+        <div class="presets" id="presets" aria-label="Gợi ý nhiệm vụ"></div>
 
         <label class="switch" for="soundToggle"><input type="checkbox" id="soundToggle" checked> Bật âm thanh</label>
         <p class="err" id="err" role="alert"></p>
@@ -199,7 +226,10 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
       <div class="map" id="map" aria-hidden="true"><div class="map-line"></div><div class="map-flag"></div></div>
     </div>
     <div class="stage" id="stage">
-      <canvas id="trackCv" role="img" aria-label="Đường đua"></canvas>
+      <canvas id="trackCv" role="img" aria-label="Đường đua. Chạm để đổi góc nhìn."></canvas>
+      <button type="button" class="stage-btn" id="viewBtn" aria-pressed="false">Toàn cảnh</button>
+      <button type="button" class="stage-btn" id="fsBtn" aria-label="Toàn màn hình" hidden>⛶</button>
+      <div class="toast" id="toast" hidden></div>
       <div class="cd" id="cd" aria-live="assertive"></div>
       <div class="banner" id="banner" hidden></div>
     </div>
@@ -268,10 +298,12 @@ const NICKS = ['Tia Chớp', 'Bánh Bao', 'Gió Lốc', 'Rùa Thần', 'Xe Ôm',
 const EV = {
   boost:      { mult: 1.8,  dur: 1.6, w: 28, float: 'Tăng tốc!',   sfx: 'whoosh' },
   rocket:     { mult: 2.6,  dur: 1.1, w: 6,  float: 'Cà rốt thần!', sfx: 'whoosh' },
-  stumble:    { mult: 0,    dur: 1.3, w: 22, float: 'Á á á!',       sfx: 'boing'  },
+  stumble:    { mult: 0,    dur: 1.3, w: 0,  float: 'Á á á!',       sfx: 'boing'  }, // chỉ xảy ra khi trúng chướng ngại vật
   nap:        { mult: 0,    dur: 2.0, w: 10, float: 'Zzz…',         sfx: 'snore'  },
   distracted: { mult: 0.35, dur: 1.8, w: 14, float: 'Ơ con bướm!',  sfx: 'tweet'  },
   backward:   { mult: -0.55, dur: 1.1, w: 8, float: 'Ủa đích đâu?', sfx: 'boing'  },
+  mud:        { mult: 0.4,  dur: 1.3, w: 0,  float: 'Bõm!',         sfx: 'splash' },
+  bumped:     { mult: 0.3,  dur: 1.0, w: 0,  float: 'RẦM!',         sfx: 'thud'   },
 };
 const EV_TOTAL = Object.values(EV).reduce((s, e) => s + e.w, 0);
 
@@ -294,6 +326,22 @@ const LINES = {
   lastDone: ['{n} về bét! Xin chúc mừng người được chọn!', 'Và {n} là người về cuối cùng! Số phận đã gọi tên!'],
   lastSoft: ['{n} về đích cuối cùng, nhưng vẫn rất là phong độ.'],
 };
+// Chướng ngại vật: jump = xác suất nhảy qua an toàn (0 = không nhảy được), hit = hậu quả khi trúng.
+const OBST = {
+  hurdle: { name: 'hàng rào',  jump: 0.6, hit: 'stumble', w: 35 },
+  mud:    { name: 'vũng bùn',  jump: 0,   hit: 'mud',     w: 25 },
+  banana: { name: 'vỏ chuối',  jump: 0,   hit: 'stumble', w: 20 },
+  rock:   { name: 'tảng đá',   jump: 0.4, hit: 'stumble', w: 20 },
+};
+const OBST_TOTAL = Object.values(OBST).reduce((a, o) => a + o.w, 0);
+Object.assign(LINES, {
+  obstacle: ['Ối! Một {o} rơi xuống ngay trước mặt {n}!', 'Ban tổ chức thả {o} vào làn của {n}! Ác quá!', 'Cẩn thận {n}, có {o} phía trước!'],
+  jumpOk: ['{n} tung người qua {o}, đẹp như phim!', 'Bay qua {o}! {n} quá đỉnh!'],
+  jumpFail: ['{n} vướng {o}, té sấp mặt!', 'Không qua nổi! {n} đâm sầm vào {o}!'],
+  mud: ['{n} lội vũng bùn, chạy như đi trong mơ!', '{n} dính bùn tới đầu gối!'],
+  banana: ['{n} đạp trúng vỏ chuối, trượt dài cả mét!', 'Vỏ chuối huyền thoại đã có nạn nhân: {n}!'],
+  bump: ['RẦM! {a} lấn làn húc trúng {b}!', '{a} đâm sầm vào {b}! Trọng tài đâu rồi?!', '{a} và {b} va nhau, bụi bay mù mịt!', '{a} ủi {b} như xe ủi đất!'],
+});
 const QUIPS_FIRST = ['Chiến thắng vinh quang… kèm theo trách nhiệm.', 'Về nhất thì phải gánh team thôi!', 'Ngựa nhanh quá cũng có cái giá của nó.'];
 const QUIPS_LAST = ['Chậm mà chắc… chắc là phải đi làm nhiệm vụ.', 'Không sao, về bét cũng là một loại nổi bật.', 'Con ngựa đã cố gắng hết sức. Thật đấy.'];
 
@@ -301,50 +349,149 @@ const QUIPS_LAST = ['Chậm mà chắc… chắc là phải đi làm nhiệm v�
    Âm thanh: tổng hợp bằng Web Audio, không cần file ngoài
    ========================================================================= */
 const Sound = (() => {
-  let ctx = null, master = null, crowdGain = null, noiseBuf = null, on = true;
+  let ctx = null, master = null, sfx = null, musicGain = null, musicFilter = null, noiseBuf = null, on = true;
   function init() {
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     try {
       ctx = new AC();
-      master = ctx.createGain(); master.gain.value = on ? 0.6 : 0; master.connect(ctx.destination);
-      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      master = ctx.createGain(); master.gain.value = on ? 0.6 : 0;
+      // Bộ nén giữ cho đoạn nước rút (nhiều lớp âm cùng lúc) không bị vỡ tiếng.
+      const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+      master.connect(comp).connect(ctx.destination);
+      sfx = ctx.createGain(); sfx.gain.value = 1; sfx.connect(master);
+      // Kênh nhạc nền đi qua bộ lọc thông thấp: hạ tần số khi quay chậm để nghe "nghẹt" và hồi hộp.
+      musicFilter = ctx.createBiquadFilter(); musicFilter.type = 'lowpass'; musicFilter.frequency.value = 14000;
+      musicGain = ctx.createGain(); musicGain.gain.value = 0.0001;
+      musicFilter.connect(musicGain).connect(master);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-      // Tiếng đám đông: nhiễu trắng qua lọc dải, chạy liên tục, chỉnh âm lượng theo độ gay cấn.
-      const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.5;
-      crowdGain = ctx.createGain(); crowdGain.gain.value = 0;
-      src.connect(bp).connect(crowdGain).connect(master); src.start();
     } catch { ctx = null; }
   }
   const now = () => ctx.currentTime;
   function env(g, t, vol, dur) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
-  function tone(f, dur, type = 'square', vol = 0.2, when = 0, slideTo = 0) {
+  // at: thời điểm tuyệt đối (dùng cho nhạc), when: độ trễ tính từ bây giờ (dùng cho hiệu ứng).
+  function tone(f, dur, type = 'square', vol = 0.2, when = 0, slideTo = 0, dest = null, at = null) {
     if (!ctx) return;
-    const t = now() + when, o = ctx.createOscillator(), g = ctx.createGain();
+    const t = at != null ? at : now() + when, o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(f, t);
     if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
-    env(g, t, vol, dur); o.connect(g).connect(master); o.start(t); o.stop(t + dur + 0.05);
+    env(g, t, vol, dur); o.connect(g).connect(dest || sfx); o.start(t); o.stop(t + dur + 0.05);
   }
-  function noise(dur, vol, type, f0, f1 = 0, when = 0) {
+  function noise(dur, vol, type, f0, f1 = 0, when = 0, dest = null, at = null) {
     if (!ctx) return;
-    const t = now() + when, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    const t = at != null ? at : now() + when, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
     s.buffer = noiseBuf; f.type = type; f.frequency.setValueAtTime(f0, t);
     if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    env(g, t, vol, dur); s.connect(f).connect(g).connect(master); s.start(t, Math.random()); s.stop(t + dur + 0.05);
+    env(g, t, vol, dur); s.connect(f).connect(g).connect(dest || sfx); s.start(t, Math.random() * 0.4); s.stop(t + dur + 0.05);
   }
+
+  /* ----- Nhạc nền: điệu galop tự sáng tác, 8 ô nhịp, mỗi ô 8 nốt móc đơn ----- */
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const CH = { C: { r: 36, n: [60, 64, 67] }, G: { r: 43, n: [59, 62, 67] }, Am: { r: 45, n: [60, 64, 69] }, F: { r: 41, n: [60, 65, 69] } };
+  const PROG = ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'C'];
+  const _ = 0;
+  const LEAD = [
+    72, _, 76, 79, 76, _, 72, _,
+    74, _, 79, 83, 81, 79, 77, 74,
+    76, _, 72, 76, 81, _, 79, 76,
+    77, 76, 74, 72, 74, _, _, _,
+    79, _, 79, 81, 79, 77, 76, 74,
+    74, 76, 77, 79, 83, _, 81, 79,
+    77, _, 81, _, 79, _, 83, _,
+    84, _, 79, _, 72, _, _, _,
+  ];
+  // Cả trận là MỘT bài: cùng giai điệu, cùng vòng hợp âm. Chặng cuối chỉ chồng thêm lớp
+  // (bass chạy, trống con, giai điệu nhân đôi quãng tám, hợp âm kéo dài), nhanh dần và dâng tông
+  // theo khoảng cách tới đích, nên chuyển đoạn liền mạch chứ không đổi sang bài khác.
+  const music = { playing: false, step: 0, next: 0, timer: 0, level: 0.3, slow: false, section: 'main', prog: 0, fill: 0, sstep: 0 };
+
+  function snare(t, vol, M) { noise(0.08, vol, 'bandpass', 2000, 0, 0, M, t); tone(200, 0.06, 'triangle', vol * 0.5, 0, 0, M, t); }
+  function kick(t, vol, M) { tone(150, 0.13, 'sine', vol, 0, 45, M, t); }
+
+  function stepSong(i, t, st, M) {
+    const bar = Math.floor(i / 8), s = i % 8;
+    const ch = CH[bar === 6 && s >= 4 ? 'G' : PROG[bar]];
+    const fin = music.section === 'final', p = fin ? music.prog : 0;
+    const up = fin ? (p > 0.66 ? 2 : p > 0.33 ? 1 : 0) : 0;   // dâng tông từng nửa cung
+    const f = (m) => mtof(m + up);
+
+    // Bass: "bùm-chát" như cũ; chặng cuối chuyển thành chạy móc đơn đều, xen quãng tám.
+    if (!fin) { if (s === 0 || s === 4) tone(f(ch.r + (s === 4 ? 7 : 0)), st * 1.5, 'triangle', 0.2, 0, 0, M, t); }
+    else tone(f(ch.r + (s % 2 ? 12 : 0)), st * 0.9, 'triangle', 0.2, 0, 0, M, t);
+
+    // Trống: chân ở phách mạnh; chặng cuối thêm trống con phách 2-4, rồi dày dần.
+    if (s === 0 || s === 4 || (fin && p > 0.5 && (s === 2 || s === 6))) kick(t, 0.22, M);
+    if (fin && (s === 2 || s === 6)) snare(t, 0.09 + p * 0.06, M);
+    if (fin && p > 0.6) snare(t + st / 2, 0.03 + p * 0.05, M);
+    if (music.fill > 0) { snare(t, 0.04 + (8 - music.fill) * 0.014, M); snare(t + st / 2, 0.04 + (8 - music.fill) * 0.014, M); music.fill--; }
+
+    // Hợp âm "chát" ở phách nhẹ; chặng cuối thêm hợp âm kéo dài cả ô nhịp làm nền.
+    if (s === 2 || s === 6) ch.n.forEach((m) => tone(f(m), st * 0.7, 'triangle', 0.035, 0, 0, M, t));
+    if (fin && s === 0) ch.n.forEach((m) => tone(f(m), st * 7.6, 'sawtooth', 0.012 + p * 0.01, 0, 0, M, t));
+
+    // Giai điệu chính; chặng cuối nhân đôi lên quãng tám cho sáng và gắt hơn.
+    const m = LEAD[i];
+    if (m) {
+      tone(f(m), st * 0.85, 'square', 0.03 + music.level * 0.025, 0, 0, M, t);
+      if (fin) tone(f(m + 12), st * 0.7, 'square', 0.012 + p * 0.016, 0, 0, M, t);
+    }
+    if (music.level >= 0.7 && s % 2 === 1) tone(f(ch.n[2] + 12), st * 0.4, 'sine', 0.035, 0, 0, M, t);
+  }
+
+  // Quay chậm: vẫn trong tông Đô, giữ hợp âm G7 (chờ được giải quyết về C khi về đích) và tiếng tim đập.
+  function stepSlow(i, t, st, M) {
+    const s = i % 8;
+    if (s === 0) { kick(t, 0.35, M); [55, 59, 62, 65].forEach((m) => tone(mtof(m + 12), st * 7.8, 'triangle', 0.028, 0, 0, M, t)); }
+    if (s === 1 || s === 5) kick(t, 0.18, M);
+    if (s === 4) kick(t, 0.3, M);
+  }
+
+  function pump() {
+    if (!music.playing || !ctx) return;
+    const M = musicFilter;
+    const bpm = music.slow ? 96 : 150 + (music.section === 'final' ? 12 + music.prog * 36 : 0);
+    const st = 60 / bpm / 2;
+    if (music.next < now()) music.next = now() + 0.02;
+    while (music.next < now() + 0.15) {
+      if (music.slow) { stepSlow(music.sstep, music.next, st, M); music.sstep = (music.sstep + 1) % 8; }
+      else { stepSong(music.step, music.next, st, M); music.step = (music.step + 1) % LEAD.length; }
+      music.next += st;
+    }
+  }
+
   return {
     init,
     setOn(v) { on = v; if (master) master.gain.setTargetAtTime(v ? 0.6 : 0, now(), 0.05); },
-    crowd(level) { if (crowdGain) crowdGain.gain.setTargetAtTime(level * 0.22, now(), 0.35); },
+    startMusic() {
+      if (!ctx) return;
+      Object.assign(music, { playing: true, step: 0, sstep: 0, fill: 0, next: now() + 0.05, slow: false, section: 'main', prog: 0 });
+      musicFilter.frequency.setTargetAtTime(14000, now(), 0.05);
+      musicGain.gain.cancelScheduledValues(now()); musicGain.gain.setTargetAtTime(1, now(), 0.05);
+      clearInterval(music.timer); music.timer = setInterval(pump, 25); pump();
+    },
+    stopMusic() { music.playing = false; clearInterval(music.timer); if (musicGain) musicGain.gain.setTargetAtTime(0.0001, now(), 0.15); },
+    mood(level) { music.level = clamp(level, 0, 1); },
+    // remaining: số mét còn lại tới khoảnh khắc quyết định; dưới 220m thì chuyển sang đoạn nước rút.
+    stretch(remaining) {
+      if (!music.playing) return;
+      if (music.section !== 'final' && remaining < 220) { music.section = 'final'; music.fill = 8; } // một ô nhịp trống dồn để vào đoạn
+      if (music.section === 'final') music.prog = Math.max(music.prog, clamp(1 - remaining / 220, 0, 1));
+    },
+    slowmo(v) { if (music.slow === v) return; music.slow = v; music.sstep = 0; if (musicFilter) musicFilter.frequency.setTargetAtTime(v ? 2200 : 14000, now(), 0.1); },
+    crash() { noise(1.4, 0.2, 'highpass', 5000); tone(55, 0.5, 'sine', 0.35, 0, 30); },
     beep(hi) { tone(hi ? 880 : 440, hi ? 0.5 : 0.16, 'square', 0.13); },
-    gun() { noise(0.45, 0.7, 'lowpass', 4000, 150); },
-    clop() { noise(0.045, 0.08 + Math.random() * 0.06, 'bandpass', 900 + Math.random() * 700); },
+    gun() { noise(0.3, 0.6, 'lowpass', 3000, 150); },
+    clop() { tone(rand(650, 900), 0.035, 'sine', 0.05); },
     boing() { tone(520, 0.45, 'sine', 0.25, 0, 110); tone(260, 0.3, 'triangle', 0.1, 0.05, 90); },
-    whoosh() { noise(0.6, 0.3, 'highpass', 300, 5000); },
+    whoosh() { tone(300, 0.45, 'sine', 0.12, 0, 1400); tone(450, 0.4, 'triangle', 0.06, 0.03, 1800); },
     snore() { tone(95, 0.7, 'sawtooth', 0.05, 0, 70); },
+    thud() { tone(110, 0.3, 'sine', 0.4, 0, 40); tone(70, 0.25, 'square', 0.08, 0, 35); },
+    splash() { tone(260, 0.3, 'sine', 0.22, 0, 70); tone(180, 0.25, 'triangle', 0.1, 0.06, 60); },
+    drop() { tone(1500, 0.45, 'sine', 0.08, 0, 260); },
+    hop() { tone(330, 0.25, 'triangle', 0.15, 0, 880); },
     tweet() { tone(2200, 0.08, 'sine', 0.08); tone(2600, 0.08, 'sine', 0.08, 0.1); },
     fanfare() { [523, 659, 784, 1047].forEach((f, i) => { tone(f, i === 3 ? 0.8 : 0.18, 'triangle', 0.22, i * 0.14); tone(f / 2, i === 3 ? 0.8 : 0.18, 'square', 0.05, i * 0.14); }); },
     sad() { [392, 370, 349, 262].forEach((f, i) => tone(f, i === 3 ? 0.9 : 0.3, 'triangle', 0.2, i * 0.3)); },
@@ -368,7 +515,8 @@ const el = {
   err: $('#err'), task: $('#taskInput'), sound: $('#soundToggle'),
   clock: $('#clock'), leadTxt: $('#leadTxt'), remain: $('#remain'), map: $('#map'),
   stage: $('#stage'), cv: $('#trackCv'), cd: $('#cd'), banner: $('#banner'), say: $('#say'),
-  fastBtn: $('#fastBtn'), muteBtn: $('#muteBtn'),
+  fastBtn: $('#fastBtn'), muteBtn: $('#muteBtn'), viewBtn: $('#viewBtn'), fsBtn: $('#fsBtn'), toast: $('#toast'),
+  taskClear: $('#taskClear'), presets: $('#presets'),
 };
 el.task.value = String(store.get('hr.task', '')).slice(0, 60);
 el.sound.checked = soundOn;
@@ -417,7 +565,21 @@ $('#clearBtn').addEventListener('click', () => { names = []; isSample = false; s
 document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; renderMode(); saveSetup(); }));
 function renderMode() { document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === mode))); }
 el.sound.addEventListener('change', () => { soundOn = el.sound.checked; saveSetup(); });
+const PRESETS = ['Bao trà sữa cả nhóm', 'Đi mua nước đá', 'Rửa chén', 'Trả tiền ship', 'Hát một bài', 'Dọn phòng'];
+function renderTask() {
+  const v = el.task.value.trim();
+  el.taskClear.hidden = !v;
+  el.presets.querySelectorAll('.preset').forEach((b) => b.setAttribute('aria-pressed', String(b.textContent === v)));
+}
+PRESETS.forEach((t) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'preset'; b.textContent = t;
+  b.addEventListener('click', () => { el.task.value = el.task.value.trim() === t ? '' : t; renderTask(); saveSetup(); });
+  el.presets.append(b);
+});
+el.task.addEventListener('input', renderTask);
 el.task.addEventListener('change', saveSetup);
+el.task.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.task.blur(); } });
+el.taskClear.addEventListener('click', () => { el.task.value = ''; renderTask(); saveSetup(); el.task.focus(); });
 
 $('#setupForm').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -466,10 +628,12 @@ function startRace() {
       i, name, nick: nicks[i % nicks.length], color: COLORS[i % COLORS.length], coat: pick(COATS),
       x: 0, v: 0, mult: 1, target: rand(0.95, 1.05), retarget: rand(0.5, 1.5),
       ev: null, cool: rand(2, 4), phase: Math.random() * 6, finished: false, place: 0, time: 0, float: null,
+      yOff: 0, swerve: null, push: null, jump: null,
     })),
     mode, task: el.task.value.trim(), t: 0, state: 'countdown', cd: 3.6, fast: 1, slow: false,
-    cam: { x: null, s: null }, finishOrder: [], leader: null, cand: null, candT: 0, lastLeadSay: -10,
+    cam: { x: null, s: null }, view: store.get('hr.view', 'pack') === 'all' ? 'all' : 'pack', finishOrder: [], leader: null, cand: null, candT: 0, lastLeadSay: -10,
     half: false, final: false, photoSaid: false, filler: 6, clop: 0, endT: 0, shake: 0,
+    obstacles: [], obsT: rand(3, 4.5), bumpCool: rand(3, 5), fx: [],
   };
   Say.reset(); el.say.textContent = 'Các chiến mã đang vào chuồng…';
   el.fastBtn.setAttribute('aria-pressed', 'false');
@@ -477,8 +641,10 @@ function startRace() {
   el.leadTxt.textContent = race.mode === 'first' ? 'Tìm người về nhất' : 'Tìm người về bét';
   el.remain.textContent = `${TRACK}m`;
   buildMap();
-  show('race'); resize();
-  Sound.crowd(0.2);
+  show('race'); resize(); renderView();
+  if (innerHeight > innerWidth && innerWidth < 600) showToast('Mẹo: xoay ngang điện thoại để xem rộng hơn. Chạm vào đường đua để đổi góc nhìn.', 4500);
+  else showToast('Chạm vào đường đua để đổi góc nhìn.', 3000);
+  Sound.stopMusic(); Sound.mood(0.3);
   cancelAnimationFrame(rafId); lastTs = 0; rafId = requestAnimationFrame(frame);
 }
 
@@ -496,6 +662,29 @@ el.muteBtn.addEventListener('click', () => {
   el.muteBtn.setAttribute('aria-pressed', String(soundOn)); el.muteBtn.textContent = soundOn ? '🔊' : '🔇';
   el.sound.checked = soundOn;
 });
+
+function renderView() {
+  const all = race && race.view === 'all';
+  el.viewBtn.setAttribute('aria-pressed', String(all));
+  el.viewBtn.textContent = all ? 'Bám sát' : 'Toàn cảnh';
+}
+function toggleView() { if (!race) return; race.view = race.view === 'all' ? 'pack' : 'all'; store.set('hr.view', race.view); renderView(); }
+el.viewBtn.addEventListener('click', toggleView);
+el.cv.addEventListener('click', toggleView);
+
+// Toàn màn hình: chỉ hiện nút khi trình duyệt cho phép (trong khung nhúng thường bị chặn).
+const fsOk = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+el.fsBtn.hidden = !fsOk;
+el.fsBtn.addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else { await document.documentElement.requestFullscreen(); try { await screen.orientation?.lock?.('landscape'); } catch { /* không hỗ trợ khoá xoay */ } }
+  } catch { showToast('Trình duyệt không cho mở toàn màn hình ở đây.', 2500); }
+});
+document.addEventListener('fullscreenchange', () => { if (!el.race.hidden) setTimeout(resize, 50); });
+
+let toastTimer = 0;
+function showToast(t, ms) { el.toast.textContent = t; el.toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.toast.hidden = true; }, ms); }
 
 function frame(ts) {
   const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
@@ -522,10 +711,10 @@ function finish(h) {
   if (h.place === 1) {
     R.slow = false; R.shake = 0.4;
     Say.now(fill(pick(LINES.win), h, { k: h.nick }));
-    if (R.mode === 'first') { Sound.fanfare(); Sound.crowd(1); showBanner('VỀ NHẤT!'); }
-    else Sound.crowd(0.6);
+    if (R.mode === 'first') { Sound.stopMusic(); Sound.crash(); Sound.fanfare(); showBanner('VỀ NHẤT!'); }
+    else Sound.mood(0.6);
   } else if (h.place === n) {
-    if (R.mode === 'last') { Say.now(fill(pick(LINES.lastDone), h)); Sound.sad(); Sound.crowd(1); showBanner('VỀ BÉT!'); R.shake = 0.4; }
+    if (R.mode === 'last') { Say.now(fill(pick(LINES.lastDone), h)); Sound.stopMusic(); Sound.crash(); Sound.sad(); showBanner('VỀ BÉT!'); R.shake = 0.4; }
     else Say.push(fill(pick(LINES.lastSoft), h), 2);
   } else if (h.place <= 3 || R.mode === 'last') {
     Say.push(fill(pick(LINES.place), h, { p: h.place }), 2);
@@ -544,7 +733,7 @@ function update(dt) {
     for (const h of R.horses) h.phase += dt * 1.5;
     if (R.cd <= 0) {
       R.state = 'run'; Sound.beep(true); Sound.gun(); popCount('Chạy!');
-      Say.now(pick(LINES.start)); Sound.crowd(0.35); requestWake();
+      Say.now(pick(LINES.start)); Sound.mood(0.3); Sound.startMusic(); requestWake();
     }
     return;
   }
@@ -566,6 +755,7 @@ function update(dt) {
 
   for (const h of hs) {
     if (h.float) { h.float.t -= dt; if (h.float.t <= 0) h.float = null; }
+    moveTimers(h, sdt);
     if (h.finished) { h.v += (8 - h.v) * Math.min(1, sdt * 1.2); h.x += h.v * sdt; h.phase += sdt * h.v / BASE * 14; continue; }
 
     // Phong độ dao động nhẹ, đổi mục tiêu mỗi 0.8–2.2 giây.
@@ -584,14 +774,21 @@ function update(dt) {
     const post = anyDone && R.mode === 'first' ? 1.2 : 1;
     const tv = BASE * h.mult * rb * em * sprint * post;
     h.v += (tv - h.v) * Math.min(1, sdt * (em <= 0 ? 6 : 2.5));
+    const px = h.x;
     h.x = Math.max(0, h.x + h.v * sdt);
+    if (h.x > px) crossObstacles(h, px);
     h.phase += sdt * Math.abs(h.v) / BASE * 14;
     if (h.x >= TRACK) finish(h);
   }
 
+  spawnObstacles(sdt, eventsOn, running, lead);
+  tryBump(sdt, eventsOn);
+  R.fx = R.fx.filter((f) => (f.t -= dt) > 0);
+  for (const o of R.obstacles) { if (o.drop > 0) o.drop = Math.max(0, o.drop - dt); if (o.done && o.fade > 0) o.fade -= dt; }
+
   // Tiếng vó ngựa
   R.clop -= sdt;
-  if (R.clop <= 0) { R.clop = 0.07; if (running.some((h) => h.v > 5)) Sound.clop(); }
+  if (R.clop <= 0) { R.clop = 0.14; if (running.some((h) => h.v > 5)) Sound.clop(); }
 
   // ----- Bình luận theo diễn biến -----
   const un = hs.filter((h) => !h.finished).sort((a, b) => b.x - a.x);
@@ -604,7 +801,7 @@ function update(dt) {
       R.leader = R.cand;
     }
     if (!R.half && top.x > TRACK / 2) { R.half = true; Say.push(fill(pick(LINES.half), top, { b: un[un.length - 1].name }), 2); }
-    if (!R.final && top.x > TRACK - 200) { R.final = true; Say.push(pick(LINES.final), 2); Sound.crowd(0.75); showBanner('NƯỚC RÚT!'); }
+    if (!R.final && top.x > TRACK - 200) { R.final = true; Say.push(pick(LINES.final), 2); Sound.mood(0.8); showBanner('NƯỚC RÚT!'); }
   }
   R.filler -= dt;
   if (R.filler <= 0 && Say.idle() && un.length) {
@@ -617,10 +814,15 @@ function update(dt) {
   if (R.mode === 'first' && !anyDone && un.length >= 2 && un[0].x > TRACK - 70 && un[0].x - un[1].x < 7) { wantSlow = true; pair = [un[0], un[1]]; }
   if (R.mode === 'last' && un.length === 2 && n > 2 && un[1].x > TRACK - 70 && un[0].x - un[1].x < 7) { wantSlow = true; pair = [un[0], un[1]]; }
   if (wantSlow && !R.photoSaid) {
-    R.photoSaid = true; showBanner('SÁT NÚT!'); Sound.crowd(0.95);
+    R.photoSaid = true; showBanner('SÁT NÚT!'); Sound.mood(1);
     Say.now(fill(pick(R.mode === 'first' ? LINES.photoFirst : LINES.photoLast), null, { a: pair[0].name, b: pair[1].name }));
   }
-  R.slow = wantSlow;
+  R.slow = wantSlow; Sound.slowmo(wantSlow);
+  if (un.length) {
+    // Về nhất: khoảng cách của con dẫn đầu. Về bét: sau khi có người về đích, bám theo con áp chót.
+    const ref = R.mode === 'last' && anyDone && un.length >= 2 ? un[un.length - 2] : un[0];
+    Sound.stretch(TRACK - ref.x);
+  }
 
   // An toàn: không để cuộc đua kéo dài vô tận.
   if (R.t > 90) un.forEach((h) => finish(h));
@@ -629,17 +831,112 @@ function update(dt) {
   updateHud(un);
 }
 
+/* ----- Chướng ngại vật ----- */
+function setEv(h, type, extraDur = 0) {
+  h.ev = { type, t: EV[type].dur + extraDur }; h.cool = rand(2, 3.5);
+  h.float = { text: EV[type].float, t: 1.3 };
+  const sfx = EV[type].sfx; if (sfx && Sound[sfx]) Sound[sfx]();
+}
+function spawnObstacles(sdt, eventsOn, running, lead) {
+  const R = race;
+  R.obsT -= sdt;
+  if (R.obsT > 0) return;
+  R.obsT = rand(2.8, 4.5);
+  if (!eventsOn || R.t < 2.5 || lead > TRACK * 0.9 || running.length < 2) return;
+  // Một nửa số lần nhắm vào ngựa dẫn đầu cho kịch tính, còn lại chọn ngẫu nhiên.
+  const sorted = running.slice().sort((a, b) => b.x - a.x);
+  const target = Math.random() < 0.5 ? sorted[0] : pick(running);
+  if (R.obstacles.some((o) => !o.done && o.lane === target.i)) return;
+  const x = target.x + rand(45, 90);
+  if (x > TRACK - 30) return;
+  let r = Math.random() * OBST_TOTAL, kind = 'hurdle';
+  for (const [k2, o] of Object.entries(OBST)) { r -= o.w; if (r <= 0) { kind = k2; break; } }
+  R.obstacles.push({ kind, lane: target.i, x, drop: 0.5, done: false, fade: 0 });
+  Sound.drop();
+  Say.push(fill(pick(LINES.obstacle), target, { o: OBST[kind].name }), 1);
+}
+function crossObstacles(h, px) {
+  for (const o of race.obstacles) {
+    if (o.done || o.lane !== h.i || o.x <= px || o.x > h.x) continue;
+    const def = OBST[o.kind], vars = { o: def.name };
+    if (def.jump && Math.random() < def.jump) {
+      o.done = true; o.fade = 0; o.cleared = true;
+      h.jump = { t: 0, dur: 0.55 }; Sound.hop();
+      h.float = { text: 'Hự! Qua rồi!', t: 1.1 };
+      if (Math.random() < 0.6) Say.push(fill(pick(LINES.jumpOk), h, vars), 1);
+    } else {
+      o.done = true; o.fade = 1.6; // vật cản còn hiện thêm một lúc để thấy rõ vì sao ngựa té
+      setEv(h, def.hit); h.ev.cause = o.kind;
+      h.float = { text: { hurdle: 'Vướng hàng rào!', rock: 'Vấp đá!', banana: 'Trượt vỏ chuối!', mud: 'Dính bùn!' }[o.kind], t: 1.4 };
+      const key = o.kind === 'mud' ? 'mud' : o.kind === 'banana' ? 'banana' : 'jumpFail';
+      Say.push(fill(pick(LINES[key]), h, vars), 2);
+      if (def.hit === 'stumble') race.shake = Math.max(race.shake, 0.2);
+    }
+  }
+}
+/* ----- Ngựa lấn làn húc nhau ----- */
+function tryBump(sdt, eventsOn) {
+  const R = race;
+  R.bumpCool -= sdt;
+  if (R.bumpCool > 0 || !eventsOn || R.t < 3) return;
+  const free = (h) => h && !h.finished && !h.ev && !h.swerve && !h.push && !h.jump && h.x < TRACK * 0.96;
+  const pairs = [];
+  for (const a of R.horses) for (const d of [-1, 1]) {
+    const b = R.horses[a.i + d];
+    if (free(a) && free(b) && Math.abs(a.x - b.x) < 5) pairs.push([a, b, d]);
+  }
+  if (!pairs.length || Math.random() > 0.35 * sdt * pairs.length) return;
+  const [a, b, d] = pick(pairs);
+  a.swerve = { t: 0, dur: 0.7, dir: d, target: b, hit: false };
+  R.bumpCool = rand(4, 7);
+}
+function moveTimers(h, sdt) {
+  const R = race;
+  let y = 0;
+  if (h.swerve) {
+    const sw = h.swerve; sw.t += sdt;
+    const pr = clamp(sw.t / sw.dur, 0, 1);
+    y += sw.dir * 0.5 * Math.sin(pr * Math.PI);
+    if (!sw.hit && pr >= 0.5) {
+      sw.hit = true;
+      const b = sw.target;
+      if (!b.finished) { setEv(b, 'bumped', 0.2); b.push = { t: 0, dur: 0.5, dir: sw.dir }; }
+      setEv(h, 'bumped', -0.4);
+      h.float = { text: 'Ối!', t: 1 };
+      R.fx.push({ x: (h.x + b.x) / 2, laneF: h.i + sw.dir * 0.5, t: 0.6 });
+      R.shake = Math.max(R.shake, 0.3);
+      Say.now(fill(pick(LINES.bump), null, { a: h.name, b: b.name }));
+    }
+    if (pr >= 1) h.swerve = null;
+  }
+  if (h.push) {
+    const pu = h.push; pu.t += sdt;
+    const pr = clamp(pu.t / pu.dur, 0, 1);
+    y += pu.dir * 0.25 * Math.sin(pr * Math.PI);
+    if (pr >= 1) h.push = null;
+  }
+  h.yOff = y;
+  if (h.jump) { h.jump.t += sdt; if (h.jump.t >= h.jump.dur) h.jump = null; }
+}
+
 function updateCam(dt) {
   const R = race; if (!W) return;
   const xs = R.horses.map((h) => Math.min(h.x, TRACK + 30));
   const lead = Math.max(...xs), last = Math.min(...xs);
-  // Thu phóng theo chiều ngang để nhìn thấy cả đoàn ngựa cùng lúc (ngựa không bị méo).
-  const sMax = W / 65, sMin = W / 420;
-  const sT = clamp((W * 0.7) / (lead - last + 20), sMin, sMax);
-  R.cam.s = R.cam.s == null ? sT : R.cam.s + (sT - R.cam.s) * Math.min(1, dt * 1.8);
+  // Chỉ thu phóng theo chiều ngang nên ngựa không bị méo. Khung hình luôn chứa cả đoàn,
+  // chừa lề trái cho bảng tên và lề phải cho đầu ngựa.
+  const padL = Math.min(W * 0.28, 110), padR = Math.min(W * 0.12, 48);
+  const span = Math.max(1, W - padL - padR);
+  const sAll = span / (TRACK + 10);
+  let sT, xT;
+  if (R.view === 'all') { sT = sAll; xT = -padL / sT; }
+  else {
+    sT = clamp(span / (lead - last + 15), sAll, W / 65);
+    xT = R.state === 'countdown' ? -padL / sT : Math.max(last - padL / sT, lead - (W - padR) / sT);
+  }
+  R.cam.s = R.cam.s == null ? sT : R.cam.s + (sT - R.cam.s) * Math.min(1, dt * 2.2);
   const s = R.cam.s;
-  let xT = Math.max(last - (W * 0.14) / s, lead - (W * 0.8) / s);
-  if (R.state === 'countdown') xT = -(W * 0.2) / s;
+  if (R.view === 'all') xT = -padL / s;
   R.cam.x = R.cam.x == null ? xT : R.cam.x + (xT - R.cam.x) * Math.min(1, dt * 5);
 }
 
@@ -657,10 +954,10 @@ function updateHud(un) {
   const R = race;
   el.clock.textContent = R.t.toFixed(1) + 's';
   if (R.finishOrder.length && R.mode === 'first') {
-    el.leadTxt.replaceChildren('Về nhất: ', bold(R.finishOrder[0].name));
+    el.leadTxt.replaceChildren('🏆 ', bold(R.finishOrder[0].name));
     el.remain.textContent = '';
   } else if (un.length) {
-    el.leadTxt.replaceChildren(R.mode === 'last' && R.finishOrder.length ? 'Đang bét: ' : 'Dẫn đầu: ', bold(R.mode === 'last' && R.finishOrder.length ? un[un.length - 1].name : un[0].name));
+    el.leadTxt.replaceChildren(R.mode === 'last' && R.finishOrder.length ? '🐢 Bét: ' : '👑 ', bold(R.mode === 'last' && R.finishOrder.length ? un[un.length - 1].name : un[0].name));
     el.remain.textContent = `Còn ${Math.max(0, Math.round(TRACK - un[0].x))}m`;
   }
   // Ngựa dẫn đầu vẽ sau cùng để nổi lên trên.
@@ -707,7 +1004,8 @@ function draw() {
   // Cỏ với vệt cắt sọc (cho cảm giác tốc độ)
   c.fillStyle = '#1d5a37'; c.fillRect(-10, -10, W + 20, H + 20);
   c.fillStyle = '#226640';
-  for (let m = Math.floor(m0 / 25) * 25; m < m1; m += 25) if (Math.round(m / 25) % 2 === 0) c.fillRect(X(m), standH, 25 * s + 0.5, H);
+  const stripe = 25 * s >= 14 ? 25 : 100;
+  for (let m = Math.floor(m0 / stripe) * stripe; m < m1; m += stripe) if (Math.round(m / stripe) % 2 === 0) c.fillRect(X(m), standH, stripe * s + 0.5, H);
 
   // Khán đài và đám đông (thị sai 0.5)
   c.fillStyle = '#16232b'; c.fillRect(-10, -10, W + 20, standH + 10);
@@ -726,7 +1024,7 @@ function draw() {
   // Bảng quảng cáo dưới khán đài
   const bh = Math.min(14, standH * 0.3);
   c.font = `800 ${Math.round(bh * 0.62)}px ${BODY_FONT}`; c.textBaseline = 'middle'; c.textAlign = 'center';
-  for (let m = Math.floor(m0 / 160) * 160 - 160; m < m1 + 160; m += 160) {
+  if (160 * s >= 150) for (let m = Math.floor(m0 / 160) * 160 - 160; m < m1 + 160; m += 160) {
     const label = BOARDS[Math.abs(m / 160) % BOARDS.length];
     const bw = c.measureText(label).width + 14;
     const bx = X(m + 80) - bw / 2;
@@ -755,7 +1053,8 @@ function draw() {
 
   // Cột mốc khoảng cách (số mét còn lại)
   c.font = `800 11px ${BODY_FONT}`; c.textAlign = 'center'; c.textBaseline = 'bottom';
-  for (let m = Math.ceil(m0 / 100) * 100; m < m1; m += 100) {
+  const dStep = [100, 200, 250, 500].find((v) => v * s >= 46) || 500;
+  for (let m = Math.ceil(m0 / dStep) * dStep; m < m1; m += dStep) {
     if (m <= 0 || m >= TRACK) continue;
     const x = X(m);
     c.fillStyle = '#e94f37'; c.fillRect(x - 2, y0 - 16, 4, 12);
@@ -785,6 +1084,16 @@ function draw() {
     c.fillStyle = 'rgba(200,200,210,.9)'; c.fillRect(X(0) + 6, y0 - 4, 3, laneH * n + 8);
   }
 
+  // Chướng ngại vật
+  for (const o of R.obstacles) {
+    if (o.done && o.fade <= 0 && !o.cleared) continue;
+    const ox = X(o.x);
+    if (ox < -60 || ox > W + 60) continue;
+    const oy = y0 + (o.lane + 0.5) * laneH + laneH * 0.28;
+    const dropY = o.drop > 0 ? -o.drop / 0.5 * (oy + 20) : 0;
+    drawObstacle(c, ox, oy + dropY, laneH, o);
+  }
+
   // Ngựa
   const k = Math.min(laneH * 1.25, 100);
   const leaderH = !R.finishOrder.length && R.state === 'run' ? R.leader : null;
@@ -792,7 +1101,8 @@ function draw() {
     const nose = X(h.x);
     const x = nose - 0.62 * k;
     if (x < -k * 2 || x > W + k) continue;
-    const y = y0 + (h.i + 0.5) * laneH + laneH * 0.06;
+    const jumpY = h.jump ? Math.sin(clamp(h.jump.t / h.jump.dur, 0, 1) * Math.PI) * 0.45 * k : 0;
+    const y = y0 + (h.i + 0.5 + (h.yOff || 0)) * laneH + laneH * 0.06 - jumpY;
     drawFx(c, x, y, k, h, t);
     drawHorse(c, x, y, k, h);
     drawTag(c, x, y, k, h, laneH);
@@ -807,6 +1117,39 @@ function draw() {
       c.globalAlpha = 1;
     }
   }
+  // Hiệu ứng va chạm
+  for (const f of R.fx) {
+    const pr = 1 - f.t / 0.6, fx2 = X(f.x) - 0.3 * k, fy2 = y0 + (f.laneF + 0.5) * laneH - 0.2 * k;
+    c.globalAlpha = clamp(f.t / 0.3, 0, 1);
+    c.font = `${Math.round(k * (0.35 + pr * 0.3))}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('💥', fx2, fy2);
+    c.globalAlpha = 1;
+  }
+}
+
+function drawObstacle(c, x, y, laneH, o) {
+  const u = Math.min(laneH, 80);
+  c.save(); c.translate(x, y);
+  const hitFade = o.done && !o.cleared;
+  if (hitFade) c.globalAlpha = clamp(o.fade, 0, 1);
+  if (o.kind === 'hurdle') {
+    if (hitFade) { c.translate(0.1 * u, 0); c.rotate(1.2); } // hàng rào bị húc đổ
+    c.fillStyle = '#f2f6ef'; c.fillRect(-0.04 * u, -0.55 * u, 0.06 * u, 0.6 * u); c.fillRect(0.2 * u, -0.55 * u, 0.06 * u, 0.6 * u);
+    for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#f2f6ef' : '#e94f37'; c.fillRect(-0.1 * u + i * 0.1 * u, -0.5 * u, 0.1 * u, 0.1 * u); c.fillRect(-0.1 * u + i * 0.1 * u, -0.25 * u, 0.1 * u, 0.08 * u); }
+  } else if (o.kind === 'mud') {
+    c.fillStyle = '#5a3416'; c.beginPath(); c.ellipse(0, 0, 0.45 * u, 0.13 * u, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#7a4a22'; c.beginPath(); c.ellipse(-0.08 * u, -0.02 * u, 0.22 * u, 0.06 * u, 0, 0, Math.PI * 2); c.fill();
+  } else if (o.kind === 'banana') {
+    if (hitFade) c.rotate(o.fade * 6);
+    c.strokeStyle = '#ffd447'; c.lineWidth = 0.09 * u; c.lineCap = 'round';
+    c.beginPath(); c.arc(0, -0.2 * u, 0.18 * u, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
+    c.strokeStyle = '#6b4f1d'; c.lineWidth = 0.04 * u; c.beginPath(); c.moveTo(0.15 * u, -0.1 * u); c.lineTo(0.2 * u, -0.06 * u); c.stroke();
+  } else {
+    c.fillStyle = '#8d939a'; c.beginPath(); c.ellipse(0, -0.1 * u, 0.22 * u, 0.16 * u, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#b3b9bf'; c.beginPath(); c.ellipse(-0.06 * u, -0.16 * u, 0.09 * u, 0.06 * u, 0, 0, Math.PI * 2); c.fill();
+  }
+  c.restore();
+  c.globalAlpha = 1;
 }
 
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
@@ -854,6 +1197,9 @@ function drawFx(c, x, y, k, h, t) {
   } else if (type === 'distracted') {
     c.font = `${Math.round(k * 0.2)}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('🦋', x + 0.75 * k + Math.cos(t * 5) * 0.18 * k, y - 0.6 * k + Math.sin(t * 7) * 0.12 * k);
+  } else if (type === 'mud') {
+    c.fillStyle = 'rgba(90,52,22,.85)';
+    for (let i = 0; i < 5; i++) { const ph = (t * 3 + i / 5) % 1; c.beginPath(); c.arc(x - 0.3 * k - ph * 0.3 * k, y + 0.3 * k - Math.sin(ph * Math.PI) * 0.25 * k, 0.035 * k, 0, Math.PI * 2); c.fill(); }
   } else if (type === 'stumble') {
     c.fillStyle = 'rgba(185,122,69,.7)';
     for (let i = 0; i < 6; i++) { const a = hash(i * 31) % 628 / 100; c.beginPath(); c.arc(x + Math.cos(a) * 0.4 * k, y + 0.3 * k - Math.abs(Math.sin(a)) * 0.2 * k, 0.05 * k, 0, Math.PI * 2); c.fill(); }
@@ -870,13 +1216,17 @@ function drawHorse(c, x, y, k, h) {
   c.save(); c.translate(x, y);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 0.36 * k, 0.42 * k, 0.06 * k, 0, 0, Math.PI * 2); c.fill();
   if (type === 'backward') c.scale(-1, 1);
-  if (type === 'stumble') { const pr = 1 - h.ev.t / EV.stumble.dur; c.translate(0, -Math.sin(pr * Math.PI) * 0.3 * k); c.rotate(pr * Math.PI * 2); }
+  if (type === 'stumble' && h.ev.cause === 'banana') { const pr = 1 - h.ev.t / EV.stumble.dur; c.translate(0, -Math.sin(pr * Math.PI) * 0.3 * k); c.rotate(pr * Math.PI * 2); } // trượt vỏ chuối: lộn vòng trên không
+  else if (type === 'stumble') { const pr = 1 - h.ev.t / EV.stumble.dur, dip = Math.sin(Math.min(1, pr * 1.6) * Math.PI / 2) * (pr > 0.7 ? (1 - pr) / 0.3 : 1); c.translate(0.1 * k * dip, 0.12 * k * dip); c.rotate(0.75 * dip); }
   if (nap) c.translate(0, 0.14 * k);
+  if (type === 'bumped') c.rotate(Math.sin(performance.now() / 40) * 0.12);
+  if (h.jump) c.rotate(-0.15 * Math.cos(clamp(h.jump.t / h.jump.dur, 0, 1) * Math.PI));
   c.translate(0, moving ? Math.sin(p * 2) * 0.035 * k : 0);
   c.lineCap = 'round'; c.lineJoin = 'round';
 
   const leg = (hx, off, col) => {
     let a = moving ? Math.sin(p + off) * 0.75 : 0, len = 0.15 * k;
+    if (h.jump) a = hx > 0 ? -1.15 : 1.15;
     if (nap) { a = hx > 0 ? -1.35 : 1.35; len = 0.1 * k; }
     const a2 = nap ? a * 1.6 : a - (moving ? (0.5 + 0.5 * Math.sin(p + off + 1.2)) * 0.9 : 0) * (hx > 0 ? -1 : 1);
     const kx = hx * k + Math.sin(a) * len, ky = 0.06 * k + Math.cos(a) * len;
@@ -927,7 +1277,7 @@ function drawHorse(c, x, y, k, h) {
    Kết quả
    ========================================================================= */
 function showResults() {
-  const R = race; cancelAnimationFrame(rafId); Sound.crowd(0.15);
+  const R = race; cancelAnimationFrame(rafId); Sound.stopMusic(); Sound.slowmo(false);
   const order = R.finishOrder;
   const chosen = R.mode === 'first' ? order[0] : order[order.length - 1];
   const v = $('#verdict');
@@ -978,7 +1328,7 @@ function resultText() {
 }
 
 $('#againBtn').addEventListener('click', () => { Sound.init(); startRace(); });
-$('#editBtn').addEventListener('click', () => { show('setup'); renderChips(); });
+$('#editBtn').addEventListener('click', () => { Sound.stopMusic(); show('setup'); renderChips(); });
 $('#copyBtn').addEventListener('click', async () => {
   const msg = $('#copyMsg');
   try { await navigator.clipboard.writeText(resultText()); msg.textContent = 'Đã sao chép, dán vào nhóm chat thôi!'; }
@@ -1031,7 +1381,7 @@ function confetti(palette) {
   requestAnimationFrame(loop);
 })();
 
-renderChips(); renderMode();
+renderChips(); renderMode(); renderTask();
 })();
 </script>
 <!-- /A:BODY -->
