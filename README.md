@@ -13,8 +13,8 @@ Game đua ngựa vui nhộn chạy trên trình duyệt điện thoại. Nhập 
 
 - Góc nhìn toàn cảnh: camera tự thu phóng để luôn thấy cả đoàn ngựa. Nút **Toàn cảnh** (hoặc chạm vào đường đua) để xem cả đường đua từ vạch xuất phát tới đích.
 - Xoay ngang điện thoại để xem rộng hơn; nút toàn màn hình hiện ra khi trình duyệt cho phép.
-- Sự kiện ngẫu nhiên: tăng tốc, cà rốt thần, vấp té lộn vòng, ngủ gật, mải đuổi bướm, chạy ngược chiều.
-- Chướng ngại vật rơi xuống đường đua (hàng rào, tảng đá, vũng bùn, vỏ chuối), hay nhắm vào ngựa dẫn đầu. Hàng rào và tảng đá có thể nhảy qua, còn không thì té.
+- Sự kiện ngẫu nhiên: tăng tốc, cà rốt thần, ngủ gật, mải đuổi bướm, chạy ngược chiều.
+- Chướng ngại vật rơi xuống đường đua (hàng rào, tảng đá, vũng bùn, vỏ chuối), hay nhắm vào ngựa dẫn đầu. Hàng rào và tảng đá có thể nhảy qua, còn không thì té chúi về trước. Ngựa chỉ té khi trúng vật cản, và vật cản còn hiện thêm một lúc để thấy rõ nguyên nhân.
 - Ngựa chạy sát nhau có thể lấn làn húc nhau: cả hai cùng khựng lại, con bị húc khựng lâu hơn.
 - Ngựa bị bỏ xa được tăng nhẹ tốc độ nên cuộc đua luôn sát nút tới cuối.
 - Bình luận viên hài hước bằng tiếng Việt, quay chậm khi hai con ngựa kề vai nhau gần đích.
