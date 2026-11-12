@@ -52,9 +52,17 @@ h1 span { color: var(--silk); }
 .label { font-weight: 800; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0; }
 .label .opt, .label .num { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--moss); font-variant-numeric: tabular-nums; }
 .add-row { display: flex; gap: 8px; }
-.field { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; border: 2px solid var(--turf-line); background: var(--turf); font-size: 16px; }
+.field { width: 100%; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; border: 2px solid var(--turf-line); background: var(--turf); font-size: 16px; }
 .field::placeholder { color: #6f9580; }
 .field:focus { border-color: var(--silk); outline: none; }
+.add-row .field { flex: 1; width: auto; }
+.task-box { position: relative; }
+.task-box .field { padding-right: 44px; }
+.task-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--moss); font-size: 20px; line-height: 1; }
+.task-clear:hover { background: var(--turf-line); color: var(--chalk); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -2px; }
+.preset { height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--turf-line); background: transparent; color: var(--chalk); font-size: 13px; font-weight: 600; }
+.preset[aria-pressed="true"] { background: var(--chalk); color: var(--turf); border-color: var(--chalk); }
 .btn-add { height: 48px; padding: 0 18px; border-radius: 12px; border: 0; background: var(--chalk); color: var(--turf); font-weight: 800; }
 .hint { margin: -4px 0 0; font-size: 13px; color: var(--moss); }
 .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -97,9 +105,14 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
 .cd { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; font: 400 clamp(64px, 26vw, 140px)/1 var(--font-display); color: var(--silk); text-shadow: 0 6px 0 rgba(0,0,0,.35); }
 .cd.pop { animation: pop .7s ease-out both; }
 @keyframes pop { 0% { transform: scale(.3); opacity: 0 } 30% { transform: scale(1.1); opacity: 1 } 100% { transform: scale(1); opacity: 0 } }
-.banner { position: absolute; left: 50%; top: 6px; transform: translateX(-50%) rotate(-4deg); padding: 6px 16px; border-radius: 10px; background: var(--rose); color: #2b0007; font: 400 clamp(22px, 7vw, 34px)/1.1 var(--font-display); white-space: nowrap; pointer-events: none; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.banner { position: absolute; left: 50%; top: 6px; transform: translateX(-50%) rotate(-4deg); padding: 5px 14px; border-radius: 10px; background: var(--rose); color: #2b0007; font: 400 clamp(18px, 5.5vw, 30px)/1.1 var(--font-display); white-space: nowrap; pointer-events: none; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .banner.go { animation: slam 1.6s ease-out both; }
 @keyframes slam { 0% { transform: translateX(-50%) rotate(-4deg) scale(2.2); opacity: 0 } 15% { transform: translateX(-50%) rotate(-4deg) scale(1); opacity: 1 } 80% { opacity: 1 } 100% { opacity: 0 } }
+.stage-btn { position: absolute; top: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--turf-line); background: rgba(15,47,31,.88); font-weight: 800; font-size: 13px; z-index: 2; }
+.stage-btn[aria-pressed="true"] { background: var(--silk); color: var(--silk-ink); border-color: var(--silk); }
+#viewBtn { right: max(8px, env(safe-area-inset-right, 0px)); }
+#fsBtn { left: max(8px, env(safe-area-inset-left, 0px)); width: 32px; padding: 0; font-size: 16px; }
+.toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 12px; background: rgba(15,20,25,.88); font-size: 13px; font-weight: 600; text-align: center; pointer-events: none; z-index: 2; }
 .caster { padding-block: 10px; display: flex; gap: 10px; align-items: center; background: #0f2f1f; min-height: 68px; }
 .mic { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--silk); color: var(--silk-ink); display: grid; place-items: center; font: 400 13px/1 var(--font-display); }
 .say { margin: 0; font-weight: 600; font-size: 15px; line-height: 1.35; min-width: 0; }
@@ -136,6 +149,16 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
 .actions .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
+/* Điện thoại xoay ngang: gom HUD vào một dòng, thu gọn bình luận để đường đua cao hơn. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud { grid-template-columns: minmax(0, auto) 1fr auto; padding-block: 6px; }
+  .hud-row { max-width: 44vw; }
+  .map { grid-column: auto; order: 1; margin-right: 18px; }
+  .hud-btns { order: 2; }
+  .caster { min-height: 0; padding-block: 6px; }
+  .mic { width: 30px; height: 30px; font-size: 10px; }
+  .say { font-size: 13px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .cd.pop, .banner.go, .say.in { animation-duration: .01s; }
   .cta { transition: none; }
@@ -175,7 +198,11 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
         </fieldset>
 
         <label class="label" for="taskInput">Nhiệm vụ <span class="opt">không bắt buộc</span></label>
-        <input class="field" id="taskInput" type="text" maxlength="60" autocomplete="off" placeholder="vd: bao cả nhóm trà sữa">
+        <div class="task-box">
+          <input class="field" id="taskInput" type="text" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Người được chọn sẽ phải…">
+          <button type="button" class="task-clear" id="taskClear" aria-label="Xoá nhiệm vụ" hidden>×</button>
+        </div>
+        <div class="presets" id="presets" aria-label="Gợi ý nhiệm vụ"></div>
 
         <label class="switch" for="soundToggle"><input type="checkbox" id="soundToggle" checked> Bật âm thanh</label>
         <p class="err" id="err" role="alert"></p>
@@ -199,7 +226,10 @@ fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: colu
       <div class="map" id="map" aria-hidden="true"><div class="map-line"></div><div class="map-flag"></div></div>
     </div>
     <div class="stage" id="stage">
-      <canvas id="trackCv" role="img" aria-label="Đường đua"></canvas>
+      <canvas id="trackCv" role="img" aria-label="Đường đua. Chạm để đổi góc nhìn."></canvas>
+      <button type="button" class="stage-btn" id="viewBtn" aria-pressed="false">Toàn cảnh</button>
+      <button type="button" class="stage-btn" id="fsBtn" aria-label="Toàn màn hình" hidden>⛶</button>
+      <div class="toast" id="toast" hidden></div>
       <div class="cd" id="cd" aria-live="assertive"></div>
       <div class="banner" id="banner" hidden></div>
     </div>
@@ -301,7 +331,7 @@ const QUIPS_LAST = ['Chậm mà chắc… chắc là phải đi làm nhiệm v�
    Âm thanh: tổng hợp bằng Web Audio, không cần file ngoài
    ========================================================================= */
 const Sound = (() => {
-  let ctx = null, master = null, crowdGain = null, noiseBuf = null, on = true;
+  let ctx = null, master = null, sfx = null, musicGain = null, musicFilter = null, noiseBuf = null, on = true;
   function init() {
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -309,41 +339,89 @@ const Sound = (() => {
     try {
       ctx = new AC();
       master = ctx.createGain(); master.gain.value = on ? 0.6 : 0; master.connect(ctx.destination);
-      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      sfx = ctx.createGain(); sfx.gain.value = 1; sfx.connect(master);
+      // Kênh nhạc nền đi qua bộ lọc thông thấp: hạ tần số khi quay chậm để nghe "nghẹt" và hồi hộp.
+      musicFilter = ctx.createBiquadFilter(); musicFilter.type = 'lowpass'; musicFilter.frequency.value = 14000;
+      musicGain = ctx.createGain(); musicGain.gain.value = 0.0001;
+      musicFilter.connect(musicGain).connect(master);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-      // Tiếng đám đông: nhiễu trắng qua lọc dải, chạy liên tục, chỉnh âm lượng theo độ gay cấn.
-      const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.5;
-      crowdGain = ctx.createGain(); crowdGain.gain.value = 0;
-      src.connect(bp).connect(crowdGain).connect(master); src.start();
     } catch { ctx = null; }
   }
   const now = () => ctx.currentTime;
   function env(g, t, vol, dur) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
-  function tone(f, dur, type = 'square', vol = 0.2, when = 0, slideTo = 0) {
+  // at: thời điểm tuyệt đối (dùng cho nhạc), when: độ trễ tính từ bây giờ (dùng cho hiệu ứng).
+  function tone(f, dur, type = 'square', vol = 0.2, when = 0, slideTo = 0, dest = null, at = null) {
     if (!ctx) return;
-    const t = now() + when, o = ctx.createOscillator(), g = ctx.createGain();
+    const t = at != null ? at : now() + when, o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(f, t);
     if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
-    env(g, t, vol, dur); o.connect(g).connect(master); o.start(t); o.stop(t + dur + 0.05);
+    env(g, t, vol, dur); o.connect(g).connect(dest || sfx); o.start(t); o.stop(t + dur + 0.05);
   }
   function noise(dur, vol, type, f0, f1 = 0, when = 0) {
     if (!ctx) return;
     const t = now() + when, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
     s.buffer = noiseBuf; f.type = type; f.frequency.setValueAtTime(f0, t);
     if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    env(g, t, vol, dur); s.connect(f).connect(g).connect(master); s.start(t, Math.random()); s.stop(t + dur + 0.05);
+    env(g, t, vol, dur); s.connect(f).connect(g).connect(sfx); s.start(t, Math.random() * 0.4); s.stop(t + dur + 0.05);
   }
+
+  /* ----- Nhạc nền: điệu galop tự sáng tác, 8 ô nhịp, mỗi ô 8 nốt móc đơn ----- */
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const CH = { C: { r: 36, n: [60, 64, 67] }, G: { r: 43, n: [59, 62, 67] }, Am: { r: 45, n: [60, 64, 69] }, F: { r: 41, n: [60, 65, 69] } };
+  const PROG = ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'C'];
+  const _ = 0;
+  const LEAD = [
+    72, _, 76, 79, 76, _, 72, _,
+    74, _, 79, 83, 81, 79, 77, 74,
+    76, _, 72, 76, 81, _, 79, 76,
+    77, 76, 74, 72, 74, _, _, _,
+    79, _, 79, 81, 79, 77, 76, 74,
+    74, 76, 77, 79, 83, _, 81, 79,
+    77, _, 81, _, 79, _, 83, _,
+    84, _, 79, _, 72, _, _, _,
+  ];
+  const music = { playing: false, step: 0, next: 0, timer: 0, level: 0.3, slow: false };
+  function schedStep(i, t, st) {
+    const bar = Math.floor(i / 8), s = i % 8;
+    const ch = CH[bar === 6 && s >= 4 ? 'G' : PROG[bar]];
+    const M = musicFilter;
+    if (s === 0 || s === 4) {
+      tone(mtof(ch.r + (s === 4 ? 7 : 0)), st * 1.5, 'triangle', 0.2, 0, 0, M, t);   // bass "bùm"
+      tone(150, 0.12, 'sine', 0.22, 0, 45, M, t);                                       // trống cái
+    }
+    if (s === 2 || s === 6) ch.n.forEach((m) => tone(mtof(m), st * 0.7, 'triangle', 0.035, 0, 0, M, t)); // hợp âm "chát"
+    const m = LEAD[i];
+    if (m) tone(mtof(m), st * 0.85, 'square', 0.03 + music.level * 0.025, 0, 0, M, t);
+    if (music.level >= 0.7 && s % 2 === 1) tone(mtof(ch.n[2] + 12), st * 0.4, 'sine', 0.035, 0, 0, M, t);
+  }
+  function pump() {
+    if (!music.playing || !ctx) return;
+    const bpm = (148 + music.level * 40) * (music.slow ? 0.55 : 1);
+    const st = 60 / bpm / 2;
+    if (music.next < now()) music.next = now() + 0.02;
+    while (music.next < now() + 0.15) { schedStep(music.step, music.next, st); music.next += st; music.step = (music.step + 1) % LEAD.length; }
+  }
+
   return {
     init,
     setOn(v) { on = v; if (master) master.gain.setTargetAtTime(v ? 0.6 : 0, now(), 0.05); },
-    crowd(level) { if (crowdGain) crowdGain.gain.setTargetAtTime(level * 0.22, now(), 0.35); },
+    startMusic() {
+      if (!ctx) return;
+      music.playing = true; music.step = 0; music.next = now() + 0.05; music.slow = false;
+      musicFilter.frequency.setTargetAtTime(14000, now(), 0.05);
+      musicGain.gain.cancelScheduledValues(now()); musicGain.gain.setTargetAtTime(1, now(), 0.05);
+      clearInterval(music.timer); music.timer = setInterval(pump, 25); pump();
+    },
+    stopMusic() { music.playing = false; clearInterval(music.timer); if (musicGain) musicGain.gain.setTargetAtTime(0.0001, now(), 0.15); },
+    mood(level) { music.level = clamp(level, 0, 1); },
+    slowmo(v) { if (music.slow === v) return; music.slow = v; if (musicFilter) musicFilter.frequency.setTargetAtTime(v ? 900 : 14000, now(), 0.1); },
     beep(hi) { tone(hi ? 880 : 440, hi ? 0.5 : 0.16, 'square', 0.13); },
-    gun() { noise(0.45, 0.7, 'lowpass', 4000, 150); },
-    clop() { noise(0.045, 0.08 + Math.random() * 0.06, 'bandpass', 900 + Math.random() * 700); },
+    gun() { noise(0.3, 0.6, 'lowpass', 3000, 150); },
+    clop() { tone(rand(650, 900), 0.035, 'sine', 0.05); },
     boing() { tone(520, 0.45, 'sine', 0.25, 0, 110); tone(260, 0.3, 'triangle', 0.1, 0.05, 90); },
-    whoosh() { noise(0.6, 0.3, 'highpass', 300, 5000); },
+    whoosh() { tone(300, 0.45, 'sine', 0.12, 0, 1400); tone(450, 0.4, 'triangle', 0.06, 0.03, 1800); },
     snore() { tone(95, 0.7, 'sawtooth', 0.05, 0, 70); },
     tweet() { tone(2200, 0.08, 'sine', 0.08); tone(2600, 0.08, 'sine', 0.08, 0.1); },
     fanfare() { [523, 659, 784, 1047].forEach((f, i) => { tone(f, i === 3 ? 0.8 : 0.18, 'triangle', 0.22, i * 0.14); tone(f / 2, i === 3 ? 0.8 : 0.18, 'square', 0.05, i * 0.14); }); },
@@ -368,7 +446,8 @@ const el = {
   err: $('#err'), task: $('#taskInput'), sound: $('#soundToggle'),
   clock: $('#clock'), leadTxt: $('#leadTxt'), remain: $('#remain'), map: $('#map'),
   stage: $('#stage'), cv: $('#trackCv'), cd: $('#cd'), banner: $('#banner'), say: $('#say'),
-  fastBtn: $('#fastBtn'), muteBtn: $('#muteBtn'),
+  fastBtn: $('#fastBtn'), muteBtn: $('#muteBtn'), viewBtn: $('#viewBtn'), fsBtn: $('#fsBtn'), toast: $('#toast'),
+  taskClear: $('#taskClear'), presets: $('#presets'),
 };
 el.task.value = String(store.get('hr.task', '')).slice(0, 60);
 el.sound.checked = soundOn;
@@ -417,7 +496,21 @@ $('#clearBtn').addEventListener('click', () => { names = []; isSample = false; s
 document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; renderMode(); saveSetup(); }));
 function renderMode() { document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === mode))); }
 el.sound.addEventListener('change', () => { soundOn = el.sound.checked; saveSetup(); });
+const PRESETS = ['Bao trà sữa cả nhóm', 'Đi mua nước đá', 'Rửa chén', 'Trả tiền ship', 'Hát một bài', 'Dọn phòng'];
+function renderTask() {
+  const v = el.task.value.trim();
+  el.taskClear.hidden = !v;
+  el.presets.querySelectorAll('.preset').forEach((b) => b.setAttribute('aria-pressed', String(b.textContent === v)));
+}
+PRESETS.forEach((t) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'preset'; b.textContent = t;
+  b.addEventListener('click', () => { el.task.value = el.task.value.trim() === t ? '' : t; renderTask(); saveSetup(); });
+  el.presets.append(b);
+});
+el.task.addEventListener('input', renderTask);
 el.task.addEventListener('change', saveSetup);
+el.task.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.task.blur(); } });
+el.taskClear.addEventListener('click', () => { el.task.value = ''; renderTask(); saveSetup(); el.task.focus(); });
 
 $('#setupForm').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -468,7 +561,7 @@ function startRace() {
       ev: null, cool: rand(2, 4), phase: Math.random() * 6, finished: false, place: 0, time: 0, float: null,
     })),
     mode, task: el.task.value.trim(), t: 0, state: 'countdown', cd: 3.6, fast: 1, slow: false,
-    cam: { x: null, s: null }, finishOrder: [], leader: null, cand: null, candT: 0, lastLeadSay: -10,
+    cam: { x: null, s: null }, view: store.get('hr.view', 'pack') === 'all' ? 'all' : 'pack', finishOrder: [], leader: null, cand: null, candT: 0, lastLeadSay: -10,
     half: false, final: false, photoSaid: false, filler: 6, clop: 0, endT: 0, shake: 0,
   };
   Say.reset(); el.say.textContent = 'Các chiến mã đang vào chuồng…';
@@ -477,8 +570,10 @@ function startRace() {
   el.leadTxt.textContent = race.mode === 'first' ? 'Tìm người về nhất' : 'Tìm người về bét';
   el.remain.textContent = `${TRACK}m`;
   buildMap();
-  show('race'); resize();
-  Sound.crowd(0.2);
+  show('race'); resize(); renderView();
+  if (innerHeight > innerWidth && innerWidth < 600) showToast('Mẹo: xoay ngang điện thoại để xem rộng hơn. Chạm vào đường đua để đổi góc nhìn.', 4500);
+  else showToast('Chạm vào đường đua để đổi góc nhìn.', 3000);
+  Sound.stopMusic(); Sound.mood(0.3);
   cancelAnimationFrame(rafId); lastTs = 0; rafId = requestAnimationFrame(frame);
 }
 
@@ -496,6 +591,29 @@ el.muteBtn.addEventListener('click', () => {
   el.muteBtn.setAttribute('aria-pressed', String(soundOn)); el.muteBtn.textContent = soundOn ? '🔊' : '🔇';
   el.sound.checked = soundOn;
 });
+
+function renderView() {
+  const all = race && race.view === 'all';
+  el.viewBtn.setAttribute('aria-pressed', String(all));
+  el.viewBtn.textContent = all ? 'Bám sát' : 'Toàn cảnh';
+}
+function toggleView() { if (!race) return; race.view = race.view === 'all' ? 'pack' : 'all'; store.set('hr.view', race.view); renderView(); }
+el.viewBtn.addEventListener('click', toggleView);
+el.cv.addEventListener('click', toggleView);
+
+// Toàn màn hình: chỉ hiện nút khi trình duyệt cho phép (trong khung nhúng thường bị chặn).
+const fsOk = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+el.fsBtn.hidden = !fsOk;
+el.fsBtn.addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else { await document.documentElement.requestFullscreen(); try { await screen.orientation?.lock?.('landscape'); } catch { /* không hỗ trợ khoá xoay */ } }
+  } catch { showToast('Trình duyệt không cho mở toàn màn hình ở đây.', 2500); }
+});
+document.addEventListener('fullscreenchange', () => { if (!el.race.hidden) setTimeout(resize, 50); });
+
+let toastTimer = 0;
+function showToast(t, ms) { el.toast.textContent = t; el.toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.toast.hidden = true; }, ms); }
 
 function frame(ts) {
   const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
@@ -522,10 +640,10 @@ function finish(h) {
   if (h.place === 1) {
     R.slow = false; R.shake = 0.4;
     Say.now(fill(pick(LINES.win), h, { k: h.nick }));
-    if (R.mode === 'first') { Sound.fanfare(); Sound.crowd(1); showBanner('VỀ NHẤT!'); }
-    else Sound.crowd(0.6);
+    if (R.mode === 'first') { Sound.stopMusic(); Sound.fanfare(); showBanner('VỀ NHẤT!'); }
+    else Sound.mood(0.6);
   } else if (h.place === n) {
-    if (R.mode === 'last') { Say.now(fill(pick(LINES.lastDone), h)); Sound.sad(); Sound.crowd(1); showBanner('VỀ BÉT!'); R.shake = 0.4; }
+    if (R.mode === 'last') { Say.now(fill(pick(LINES.lastDone), h)); Sound.stopMusic(); Sound.sad(); showBanner('VỀ BÉT!'); R.shake = 0.4; }
     else Say.push(fill(pick(LINES.lastSoft), h), 2);
   } else if (h.place <= 3 || R.mode === 'last') {
     Say.push(fill(pick(LINES.place), h, { p: h.place }), 2);
@@ -544,7 +662,7 @@ function update(dt) {
     for (const h of R.horses) h.phase += dt * 1.5;
     if (R.cd <= 0) {
       R.state = 'run'; Sound.beep(true); Sound.gun(); popCount('Chạy!');
-      Say.now(pick(LINES.start)); Sound.crowd(0.35); requestWake();
+      Say.now(pick(LINES.start)); Sound.mood(0.3); Sound.startMusic(); requestWake();
     }
     return;
   }
@@ -591,7 +709,7 @@ function update(dt) {
 
   // Tiếng vó ngựa
   R.clop -= sdt;
-  if (R.clop <= 0) { R.clop = 0.07; if (running.some((h) => h.v > 5)) Sound.clop(); }
+  if (R.clop <= 0) { R.clop = 0.14; if (running.some((h) => h.v > 5)) Sound.clop(); }
 
   // ----- Bình luận theo diễn biến -----
   const un = hs.filter((h) => !h.finished).sort((a, b) => b.x - a.x);
@@ -604,7 +722,7 @@ function update(dt) {
       R.leader = R.cand;
     }
     if (!R.half && top.x > TRACK / 2) { R.half = true; Say.push(fill(pick(LINES.half), top, { b: un[un.length - 1].name }), 2); }
-    if (!R.final && top.x > TRACK - 200) { R.final = true; Say.push(pick(LINES.final), 2); Sound.crowd(0.75); showBanner('NƯỚC RÚT!'); }
+    if (!R.final && top.x > TRACK - 200) { R.final = true; Say.push(pick(LINES.final), 2); Sound.mood(0.8); showBanner('NƯỚC RÚT!'); }
   }
   R.filler -= dt;
   if (R.filler <= 0 && Say.idle() && un.length) {
@@ -617,10 +735,10 @@ function update(dt) {
   if (R.mode === 'first' && !anyDone && un.length >= 2 && un[0].x > TRACK - 70 && un[0].x - un[1].x < 7) { wantSlow = true; pair = [un[0], un[1]]; }
   if (R.mode === 'last' && un.length === 2 && n > 2 && un[1].x > TRACK - 70 && un[0].x - un[1].x < 7) { wantSlow = true; pair = [un[0], un[1]]; }
   if (wantSlow && !R.photoSaid) {
-    R.photoSaid = true; showBanner('SÁT NÚT!'); Sound.crowd(0.95);
+    R.photoSaid = true; showBanner('SÁT NÚT!'); Sound.mood(1);
     Say.now(fill(pick(R.mode === 'first' ? LINES.photoFirst : LINES.photoLast), null, { a: pair[0].name, b: pair[1].name }));
   }
-  R.slow = wantSlow;
+  R.slow = wantSlow; Sound.slowmo(wantSlow);
 
   // An toàn: không để cuộc đua kéo dài vô tận.
   if (R.t > 90) un.forEach((h) => finish(h));
@@ -633,13 +751,20 @@ function updateCam(dt) {
   const R = race; if (!W) return;
   const xs = R.horses.map((h) => Math.min(h.x, TRACK + 30));
   const lead = Math.max(...xs), last = Math.min(...xs);
-  // Thu phóng theo chiều ngang để nhìn thấy cả đoàn ngựa cùng lúc (ngựa không bị méo).
-  const sMax = W / 65, sMin = W / 420;
-  const sT = clamp((W * 0.7) / (lead - last + 20), sMin, sMax);
-  R.cam.s = R.cam.s == null ? sT : R.cam.s + (sT - R.cam.s) * Math.min(1, dt * 1.8);
+  // Chỉ thu phóng theo chiều ngang nên ngựa không bị méo. Khung hình luôn chứa cả đoàn,
+  // chừa lề trái cho bảng tên và lề phải cho đầu ngựa.
+  const padL = Math.min(W * 0.28, 110), padR = Math.min(W * 0.12, 48);
+  const span = Math.max(1, W - padL - padR);
+  const sAll = span / (TRACK + 10);
+  let sT, xT;
+  if (R.view === 'all') { sT = sAll; xT = -padL / sT; }
+  else {
+    sT = clamp(span / (lead - last + 15), sAll, W / 65);
+    xT = R.state === 'countdown' ? -padL / sT : Math.max(last - padL / sT, lead - (W - padR) / sT);
+  }
+  R.cam.s = R.cam.s == null ? sT : R.cam.s + (sT - R.cam.s) * Math.min(1, dt * 2.2);
   const s = R.cam.s;
-  let xT = Math.max(last - (W * 0.14) / s, lead - (W * 0.8) / s);
-  if (R.state === 'countdown') xT = -(W * 0.2) / s;
+  if (R.view === 'all') xT = -padL / s;
   R.cam.x = R.cam.x == null ? xT : R.cam.x + (xT - R.cam.x) * Math.min(1, dt * 5);
 }
 
@@ -657,10 +782,10 @@ function updateHud(un) {
   const R = race;
   el.clock.textContent = R.t.toFixed(1) + 's';
   if (R.finishOrder.length && R.mode === 'first') {
-    el.leadTxt.replaceChildren('Về nhất: ', bold(R.finishOrder[0].name));
+    el.leadTxt.replaceChildren('🏆 ', bold(R.finishOrder[0].name));
     el.remain.textContent = '';
   } else if (un.length) {
-    el.leadTxt.replaceChildren(R.mode === 'last' && R.finishOrder.length ? 'Đang bét: ' : 'Dẫn đầu: ', bold(R.mode === 'last' && R.finishOrder.length ? un[un.length - 1].name : un[0].name));
+    el.leadTxt.replaceChildren(R.mode === 'last' && R.finishOrder.length ? '🐢 Bét: ' : '👑 ', bold(R.mode === 'last' && R.finishOrder.length ? un[un.length - 1].name : un[0].name));
     el.remain.textContent = `Còn ${Math.max(0, Math.round(TRACK - un[0].x))}m`;
   }
   // Ngựa dẫn đầu vẽ sau cùng để nổi lên trên.
@@ -707,7 +832,8 @@ function draw() {
   // Cỏ với vệt cắt sọc (cho cảm giác tốc độ)
   c.fillStyle = '#1d5a37'; c.fillRect(-10, -10, W + 20, H + 20);
   c.fillStyle = '#226640';
-  for (let m = Math.floor(m0 / 25) * 25; m < m1; m += 25) if (Math.round(m / 25) % 2 === 0) c.fillRect(X(m), standH, 25 * s + 0.5, H);
+  const stripe = 25 * s >= 14 ? 25 : 100;
+  for (let m = Math.floor(m0 / stripe) * stripe; m < m1; m += stripe) if (Math.round(m / stripe) % 2 === 0) c.fillRect(X(m), standH, stripe * s + 0.5, H);
 
   // Khán đài và đám đông (thị sai 0.5)
   c.fillStyle = '#16232b'; c.fillRect(-10, -10, W + 20, standH + 10);
@@ -726,7 +852,7 @@ function draw() {
   // Bảng quảng cáo dưới khán đài
   const bh = Math.min(14, standH * 0.3);
   c.font = `800 ${Math.round(bh * 0.62)}px ${BODY_FONT}`; c.textBaseline = 'middle'; c.textAlign = 'center';
-  for (let m = Math.floor(m0 / 160) * 160 - 160; m < m1 + 160; m += 160) {
+  if (160 * s >= 150) for (let m = Math.floor(m0 / 160) * 160 - 160; m < m1 + 160; m += 160) {
     const label = BOARDS[Math.abs(m / 160) % BOARDS.length];
     const bw = c.measureText(label).width + 14;
     const bx = X(m + 80) - bw / 2;
@@ -755,7 +881,8 @@ function draw() {
 
   // Cột mốc khoảng cách (số mét còn lại)
   c.font = `800 11px ${BODY_FONT}`; c.textAlign = 'center'; c.textBaseline = 'bottom';
-  for (let m = Math.ceil(m0 / 100) * 100; m < m1; m += 100) {
+  const dStep = [100, 200, 250, 500].find((v) => v * s >= 46) || 500;
+  for (let m = Math.ceil(m0 / dStep) * dStep; m < m1; m += dStep) {
     if (m <= 0 || m >= TRACK) continue;
     const x = X(m);
     c.fillStyle = '#e94f37'; c.fillRect(x - 2, y0 - 16, 4, 12);
@@ -927,7 +1054,7 @@ function drawHorse(c, x, y, k, h) {
    Kết quả
    ========================================================================= */
 function showResults() {
-  const R = race; cancelAnimationFrame(rafId); Sound.crowd(0.15);
+  const R = race; cancelAnimationFrame(rafId); Sound.stopMusic(); Sound.slowmo(false);
   const order = R.finishOrder;
   const chosen = R.mode === 'first' ? order[0] : order[order.length - 1];
   const v = $('#verdict');
@@ -978,7 +1105,7 @@ function resultText() {
 }
 
 $('#againBtn').addEventListener('click', () => { Sound.init(); startRace(); });
-$('#editBtn').addEventListener('click', () => { show('setup'); renderChips(); });
+$('#editBtn').addEventListener('click', () => { Sound.stopMusic(); show('setup'); renderChips(); });
 $('#copyBtn').addEventListener('click', async () => {
   const msg = $('#copyMsg');
   try { await navigator.clipboard.writeText(resultText()); msg.textContent = 'Đã sao chép, dán vào nhóm chat thôi!'; }
@@ -1031,7 +1158,7 @@ function confetti(palette) {
   requestAnimationFrame(loop);
 })();
 
-renderChips(); renderMode();
+renderChips(); renderMode(); renderTask();
 })();
 </script>
 <!-- /A:BODY -->
