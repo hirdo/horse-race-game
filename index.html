@@ -302,6 +302,8 @@ const EV = {
   nap:        { mult: 0,    dur: 2.0, w: 10, float: 'Zzz…',         sfx: 'snore'  },
   distracted: { mult: 0.35, dur: 1.8, w: 14, float: 'Ơ con bướm!',  sfx: 'tweet'  },
   backward:   { mult: -0.55, dur: 1.1, w: 8, float: 'Ủa đích đâu?', sfx: 'boing'  },
+  mud:        { mult: 0.4,  dur: 1.3, w: 0,  float: 'Bõm!',         sfx: 'splash' },
+  bumped:     { mult: 0.3,  dur: 1.0, w: 0,  float: 'RẦM!',         sfx: 'thud'   },
 };
 const EV_TOTAL = Object.values(EV).reduce((s, e) => s + e.w, 0);
 
@@ -324,6 +326,22 @@ const LINES = {
   lastDone: ['{n} về bét! Xin chúc mừng người được chọn!', 'Và {n} là người về cuối cùng! Số phận đã gọi tên!'],
   lastSoft: ['{n} về đích cuối cùng, nhưng vẫn rất là phong độ.'],
 };
+// Chướng ngại vật: jump = xác suất nhảy qua an toàn (0 = không nhảy được), hit = hậu quả khi trúng.
+const OBST = {
+  hurdle: { name: 'hàng rào',  jump: 0.6, hit: 'stumble', w: 35 },
+  mud:    { name: 'vũng bùn',  jump: 0,   hit: 'mud',     w: 25 },
+  banana: { name: 'vỏ chuối',  jump: 0,   hit: 'stumble', w: 20 },
+  rock:   { name: 'tảng đá',   jump: 0.4, hit: 'stumble', w: 20 },
+};
+const OBST_TOTAL = Object.values(OBST).reduce((a, o) => a + o.w, 0);
+Object.assign(LINES, {
+  obstacle: ['Ối! Một {o} rơi xuống ngay trước mặt {n}!', 'Ban tổ chức thả {o} vào làn của {n}! Ác quá!', 'Cẩn thận {n}, có {o} phía trước!'],
+  jumpOk: ['{n} tung người qua {o}, đẹp như phim!', 'Bay qua {o}! {n} quá đỉnh!'],
+  jumpFail: ['{n} vướng {o}, té sấp mặt!', 'Không qua nổi! {n} đâm sầm vào {o}!'],
+  mud: ['{n} lội vũng bùn, chạy như đi trong mơ!', '{n} dính bùn tới đầu gối!'],
+  banana: ['{n} đạp trúng vỏ chuối, trượt dài cả mét!', 'Vỏ chuối huyền thoại đã có nạn nhân: {n}!'],
+  bump: ['RẦM! {a} lấn làn húc trúng {b}!', '{a} đâm sầm vào {b}! Trọng tài đâu rồi?!', '{a} và {b} va nhau, bụi bay mù mịt!', '{a} ủi {b} như xe ủi đất!'],
+});
 const QUIPS_FIRST = ['Chiến thắng vinh quang… kèm theo trách nhiệm.', 'Về nhất thì phải gánh team thôi!', 'Ngựa nhanh quá cũng có cái giá của nó.'];
 const QUIPS_LAST = ['Chậm mà chắc… chắc là phải đi làm nhiệm vụ.', 'Không sao, về bét cũng là một loại nổi bật.', 'Con ngựa đã cố gắng hết sức. Thật đấy.'];
 
@@ -423,6 +441,10 @@ const Sound = (() => {
     boing() { tone(520, 0.45, 'sine', 0.25, 0, 110); tone(260, 0.3, 'triangle', 0.1, 0.05, 90); },
     whoosh() { tone(300, 0.45, 'sine', 0.12, 0, 1400); tone(450, 0.4, 'triangle', 0.06, 0.03, 1800); },
     snore() { tone(95, 0.7, 'sawtooth', 0.05, 0, 70); },
+    thud() { tone(110, 0.3, 'sine', 0.4, 0, 40); tone(70, 0.25, 'square', 0.08, 0, 35); },
+    splash() { tone(260, 0.3, 'sine', 0.22, 0, 70); tone(180, 0.25, 'triangle', 0.1, 0.06, 60); },
+    drop() { tone(1500, 0.45, 'sine', 0.08, 0, 260); },
+    hop() { tone(330, 0.25, 'triangle', 0.15, 0, 880); },
     tweet() { tone(2200, 0.08, 'sine', 0.08); tone(2600, 0.08, 'sine', 0.08, 0.1); },
     fanfare() { [523, 659, 784, 1047].forEach((f, i) => { tone(f, i === 3 ? 0.8 : 0.18, 'triangle', 0.22, i * 0.14); tone(f / 2, i === 3 ? 0.8 : 0.18, 'square', 0.05, i * 0.14); }); },
     sad() { [392, 370, 349, 262].forEach((f, i) => tone(f, i === 3 ? 0.9 : 0.3, 'triangle', 0.2, i * 0.3)); },
@@ -559,10 +581,12 @@ function startRace() {
       i, name, nick: nicks[i % nicks.length], color: COLORS[i % COLORS.length], coat: pick(COATS),
       x: 0, v: 0, mult: 1, target: rand(0.95, 1.05), retarget: rand(0.5, 1.5),
       ev: null, cool: rand(2, 4), phase: Math.random() * 6, finished: false, place: 0, time: 0, float: null,
+      yOff: 0, swerve: null, push: null, jump: null,
     })),
     mode, task: el.task.value.trim(), t: 0, state: 'countdown', cd: 3.6, fast: 1, slow: false,
     cam: { x: null, s: null }, view: store.get('hr.view', 'pack') === 'all' ? 'all' : 'pack', finishOrder: [], leader: null, cand: null, candT: 0, lastLeadSay: -10,
     half: false, final: false, photoSaid: false, filler: 6, clop: 0, endT: 0, shake: 0,
+    obstacles: [], obsT: rand(3, 4.5), bumpCool: rand(3, 5), fx: [],
   };
   Say.reset(); el.say.textContent = 'Các chiến mã đang vào chuồng…';
   el.fastBtn.setAttribute('aria-pressed', 'false');
@@ -684,6 +708,7 @@ function update(dt) {
 
   for (const h of hs) {
     if (h.float) { h.float.t -= dt; if (h.float.t <= 0) h.float = null; }
+    moveTimers(h, sdt);
     if (h.finished) { h.v += (8 - h.v) * Math.min(1, sdt * 1.2); h.x += h.v * sdt; h.phase += sdt * h.v / BASE * 14; continue; }
 
     // Phong độ dao động nhẹ, đổi mục tiêu mỗi 0.8–2.2 giây.
@@ -702,10 +727,17 @@ function update(dt) {
     const post = anyDone && R.mode === 'first' ? 1.2 : 1;
     const tv = BASE * h.mult * rb * em * sprint * post;
     h.v += (tv - h.v) * Math.min(1, sdt * (em <= 0 ? 6 : 2.5));
+    const px = h.x;
     h.x = Math.max(0, h.x + h.v * sdt);
+    if (h.x > px) crossObstacles(h, px);
     h.phase += sdt * Math.abs(h.v) / BASE * 14;
     if (h.x >= TRACK) finish(h);
   }
+
+  spawnObstacles(sdt, eventsOn, running, lead);
+  tryBump(sdt, eventsOn);
+  R.fx = R.fx.filter((f) => (f.t -= dt) > 0);
+  for (const o of R.obstacles) { if (o.drop > 0) o.drop = Math.max(0, o.drop - dt); if (o.done && o.fade > 0) o.fade -= dt; }
 
   // Tiếng vó ngựa
   R.clop -= sdt;
@@ -745,6 +777,93 @@ function update(dt) {
   if (R.finishOrder.length === n) { R.state = 'done'; R.endT = 2.4; }
 
   updateHud(un);
+}
+
+/* ----- Chướng ngại vật ----- */
+function setEv(h, type, extraDur = 0) {
+  h.ev = { type, t: EV[type].dur + extraDur }; h.cool = rand(2, 3.5);
+  h.float = { text: EV[type].float, t: 1.3 };
+  const sfx = EV[type].sfx; if (sfx && Sound[sfx]) Sound[sfx]();
+}
+function spawnObstacles(sdt, eventsOn, running, lead) {
+  const R = race;
+  R.obsT -= sdt;
+  if (R.obsT > 0) return;
+  R.obsT = rand(2.8, 4.5);
+  if (!eventsOn || R.t < 2.5 || lead > TRACK * 0.9 || running.length < 2) return;
+  // Một nửa số lần nhắm vào ngựa dẫn đầu cho kịch tính, còn lại chọn ngẫu nhiên.
+  const sorted = running.slice().sort((a, b) => b.x - a.x);
+  const target = Math.random() < 0.5 ? sorted[0] : pick(running);
+  if (R.obstacles.some((o) => !o.done && o.lane === target.i)) return;
+  const x = target.x + rand(45, 90);
+  if (x > TRACK - 30) return;
+  let r = Math.random() * OBST_TOTAL, kind = 'hurdle';
+  for (const [k2, o] of Object.entries(OBST)) { r -= o.w; if (r <= 0) { kind = k2; break; } }
+  R.obstacles.push({ kind, lane: target.i, x, drop: 0.5, done: false, fade: 0 });
+  Sound.drop();
+  Say.push(fill(pick(LINES.obstacle), target, { o: OBST[kind].name }), 1);
+}
+function crossObstacles(h, px) {
+  for (const o of race.obstacles) {
+    if (o.done || o.lane !== h.i || o.x <= px || o.x > h.x) continue;
+    const def = OBST[o.kind], vars = { o: def.name };
+    if (def.jump && Math.random() < def.jump) {
+      o.done = true; o.fade = 0; o.cleared = true;
+      h.jump = { t: 0, dur: 0.55 }; Sound.hop();
+      h.float = { text: 'Hự! Qua rồi!', t: 1.1 };
+      if (Math.random() < 0.6) Say.push(fill(pick(LINES.jumpOk), h, vars), 1);
+    } else {
+      o.done = true; o.fade = o.kind === 'mud' ? 1.5 : 0;
+      setEv(h, def.hit);
+      const key = o.kind === 'mud' ? 'mud' : o.kind === 'banana' ? 'banana' : 'jumpFail';
+      Say.push(fill(pick(LINES[key]), h, vars), 2);
+      if (def.hit === 'stumble') race.shake = Math.max(race.shake, 0.2);
+    }
+  }
+}
+/* ----- Ngựa lấn làn húc nhau ----- */
+function tryBump(sdt, eventsOn) {
+  const R = race;
+  R.bumpCool -= sdt;
+  if (R.bumpCool > 0 || !eventsOn || R.t < 3) return;
+  const free = (h) => h && !h.finished && !h.ev && !h.swerve && !h.push && !h.jump && h.x < TRACK * 0.96;
+  const pairs = [];
+  for (const a of R.horses) for (const d of [-1, 1]) {
+    const b = R.horses[a.i + d];
+    if (free(a) && free(b) && Math.abs(a.x - b.x) < 5) pairs.push([a, b, d]);
+  }
+  if (!pairs.length || Math.random() > 0.35 * sdt * pairs.length) return;
+  const [a, b, d] = pick(pairs);
+  a.swerve = { t: 0, dur: 0.7, dir: d, target: b, hit: false };
+  R.bumpCool = rand(4, 7);
+}
+function moveTimers(h, sdt) {
+  const R = race;
+  let y = 0;
+  if (h.swerve) {
+    const sw = h.swerve; sw.t += sdt;
+    const pr = clamp(sw.t / sw.dur, 0, 1);
+    y += sw.dir * 0.5 * Math.sin(pr * Math.PI);
+    if (!sw.hit && pr >= 0.5) {
+      sw.hit = true;
+      const b = sw.target;
+      if (!b.finished) { setEv(b, 'bumped', 0.2); b.push = { t: 0, dur: 0.5, dir: sw.dir }; }
+      setEv(h, 'bumped', -0.4);
+      h.float = { text: 'Ối!', t: 1 };
+      R.fx.push({ x: (h.x + b.x) / 2, laneF: h.i + sw.dir * 0.5, t: 0.6 });
+      R.shake = Math.max(R.shake, 0.3);
+      Say.now(fill(pick(LINES.bump), null, { a: h.name, b: b.name }));
+    }
+    if (pr >= 1) h.swerve = null;
+  }
+  if (h.push) {
+    const pu = h.push; pu.t += sdt;
+    const pr = clamp(pu.t / pu.dur, 0, 1);
+    y += pu.dir * 0.25 * Math.sin(pr * Math.PI);
+    if (pr >= 1) h.push = null;
+  }
+  h.yOff = y;
+  if (h.jump) { h.jump.t += sdt; if (h.jump.t >= h.jump.dur) h.jump = null; }
 }
 
 function updateCam(dt) {
@@ -912,6 +1031,16 @@ function draw() {
     c.fillStyle = 'rgba(200,200,210,.9)'; c.fillRect(X(0) + 6, y0 - 4, 3, laneH * n + 8);
   }
 
+  // Chướng ngại vật
+  for (const o of R.obstacles) {
+    if (o.done && o.fade <= 0 && !o.cleared) continue;
+    const ox = X(o.x);
+    if (ox < -60 || ox > W + 60) continue;
+    const oy = y0 + (o.lane + 0.5) * laneH + laneH * 0.28;
+    const dropY = o.drop > 0 ? -o.drop / 0.5 * (oy + 20) : 0;
+    drawObstacle(c, ox, oy + dropY, laneH, o);
+  }
+
   // Ngựa
   const k = Math.min(laneH * 1.25, 100);
   const leaderH = !R.finishOrder.length && R.state === 'run' ? R.leader : null;
@@ -919,7 +1048,8 @@ function draw() {
     const nose = X(h.x);
     const x = nose - 0.62 * k;
     if (x < -k * 2 || x > W + k) continue;
-    const y = y0 + (h.i + 0.5) * laneH + laneH * 0.06;
+    const jumpY = h.jump ? Math.sin(clamp(h.jump.t / h.jump.dur, 0, 1) * Math.PI) * 0.45 * k : 0;
+    const y = y0 + (h.i + 0.5 + (h.yOff || 0)) * laneH + laneH * 0.06 - jumpY;
     drawFx(c, x, y, k, h, t);
     drawHorse(c, x, y, k, h);
     drawTag(c, x, y, k, h, laneH);
@@ -934,6 +1064,38 @@ function draw() {
       c.globalAlpha = 1;
     }
   }
+  // Hiệu ứng va chạm
+  for (const f of R.fx) {
+    const pr = 1 - f.t / 0.6, fx2 = X(f.x) - 0.3 * k, fy2 = y0 + (f.laneF + 0.5) * laneH - 0.2 * k;
+    c.globalAlpha = clamp(f.t / 0.3, 0, 1);
+    c.font = `${Math.round(k * (0.35 + pr * 0.3))}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('💥', fx2, fy2);
+    c.globalAlpha = 1;
+  }
+}
+
+function drawObstacle(c, x, y, laneH, o) {
+  const u = Math.min(laneH, 80);
+  c.save(); c.translate(x, y);
+  if (o.cleared) c.globalAlpha = 1;
+  if (o.kind === 'hurdle') {
+    c.fillStyle = '#f2f6ef'; c.fillRect(-0.04 * u, -0.55 * u, 0.06 * u, 0.6 * u); c.fillRect(0.2 * u, -0.55 * u, 0.06 * u, 0.6 * u);
+    for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#f2f6ef' : '#e94f37'; c.fillRect(-0.1 * u + i * 0.1 * u, -0.5 * u, 0.1 * u, 0.1 * u); c.fillRect(-0.1 * u + i * 0.1 * u, -0.25 * u, 0.1 * u, 0.08 * u); }
+  } else if (o.kind === 'mud') {
+    c.globalAlpha = o.done ? clamp(o.fade, 0, 1) : 1;
+    c.fillStyle = '#5a3416'; c.beginPath(); c.ellipse(0, 0, 0.45 * u, 0.13 * u, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#7a4a22'; c.beginPath(); c.ellipse(-0.08 * u, -0.02 * u, 0.22 * u, 0.06 * u, 0, 0, Math.PI * 2); c.fill();
+  } else if (o.kind === 'banana') {
+    if (o.done) c.globalAlpha = 0;
+    c.strokeStyle = '#ffd447'; c.lineWidth = 0.09 * u; c.lineCap = 'round';
+    c.beginPath(); c.arc(0, -0.2 * u, 0.18 * u, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
+    c.strokeStyle = '#6b4f1d'; c.lineWidth = 0.04 * u; c.beginPath(); c.moveTo(0.15 * u, -0.1 * u); c.lineTo(0.2 * u, -0.06 * u); c.stroke();
+  } else {
+    c.fillStyle = '#8d939a'; c.beginPath(); c.ellipse(0, -0.1 * u, 0.22 * u, 0.16 * u, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#b3b9bf'; c.beginPath(); c.ellipse(-0.06 * u, -0.16 * u, 0.09 * u, 0.06 * u, 0, 0, Math.PI * 2); c.fill();
+  }
+  c.restore();
+  c.globalAlpha = 1;
 }
 
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
@@ -981,6 +1143,9 @@ function drawFx(c, x, y, k, h, t) {
   } else if (type === 'distracted') {
     c.font = `${Math.round(k * 0.2)}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('🦋', x + 0.75 * k + Math.cos(t * 5) * 0.18 * k, y - 0.6 * k + Math.sin(t * 7) * 0.12 * k);
+  } else if (type === 'mud') {
+    c.fillStyle = 'rgba(90,52,22,.85)';
+    for (let i = 0; i < 5; i++) { const ph = (t * 3 + i / 5) % 1; c.beginPath(); c.arc(x - 0.3 * k - ph * 0.3 * k, y + 0.3 * k - Math.sin(ph * Math.PI) * 0.25 * k, 0.035 * k, 0, Math.PI * 2); c.fill(); }
   } else if (type === 'stumble') {
     c.fillStyle = 'rgba(185,122,69,.7)';
     for (let i = 0; i < 6; i++) { const a = hash(i * 31) % 628 / 100; c.beginPath(); c.arc(x + Math.cos(a) * 0.4 * k, y + 0.3 * k - Math.abs(Math.sin(a)) * 0.2 * k, 0.05 * k, 0, Math.PI * 2); c.fill(); }
@@ -999,11 +1164,14 @@ function drawHorse(c, x, y, k, h) {
   if (type === 'backward') c.scale(-1, 1);
   if (type === 'stumble') { const pr = 1 - h.ev.t / EV.stumble.dur; c.translate(0, -Math.sin(pr * Math.PI) * 0.3 * k); c.rotate(pr * Math.PI * 2); }
   if (nap) c.translate(0, 0.14 * k);
+  if (type === 'bumped') c.rotate(Math.sin(performance.now() / 40) * 0.12);
+  if (h.jump) c.rotate(-0.15 * Math.cos(clamp(h.jump.t / h.jump.dur, 0, 1) * Math.PI));
   c.translate(0, moving ? Math.sin(p * 2) * 0.035 * k : 0);
   c.lineCap = 'round'; c.lineJoin = 'round';
 
   const leg = (hx, off, col) => {
     let a = moving ? Math.sin(p + off) * 0.75 : 0, len = 0.15 * k;
+    if (h.jump) a = hx > 0 ? -1.15 : 1.15;
     if (nap) { a = hx > 0 ? -1.35 : 1.35; len = 0.1 * k; }
     const a2 = nap ? a * 1.6 : a - (moving ? (0.5 + 0.5 * Math.sin(p + off + 1.2)) * 0.9 : 0) * (hx > 0 ? -1 : 1);
     const kx = hx * k + Math.sin(a) * len, ky = 0.06 * k + Math.cos(a) * len;
